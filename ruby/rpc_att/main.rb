@@ -8,4 +8,6 @@ fileReader = CodeTester.new(code)
 
 if fileReader.check_syntax
   puts fileReader.response
+else
+  puts "Blad"
 end
