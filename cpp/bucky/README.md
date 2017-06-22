@@ -1,0 +1,2 @@
+Tutorials based on youtube series by [thenewboston](https://www.youtube.com/channel/UCJbPGzawDH1njbqV-D5HqKw)<br/>
+Youtube [video playlist](https://www.youtube.com/watch?v=tvC1WCdV1XU&index=1&list=PLAE85DE8440AA6B83)
