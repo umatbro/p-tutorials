@@ -3,24 +3,19 @@
 // video no 12 & 13 & 14
 // access modifiers, constructors etc
 //
-#include <iostream>
-#include <string>
-using namespace std;
+#include "12_13_14_introduction_to_objects.h"
+Klasa::Klasa(string n) {
+    setName(n);
+}
 
-class Klasa {
-private:
-    string name;
-public:
-    Klasa(string n){
-        setName(n);
-    }
-    void coolSaying(){
-        cout << "Preaching to the choir" << endl;
-    }
-    void setName(string n){
-        name = n;
-    }
-    string getName(){
-        return name;
-    }
-};
+void Klasa::coolSaying(){
+    cout << "Preaching to the choir" << endl;
+}
+
+void Klasa::setName(string n) {
+    name = n;
+}
+
+string Klasa::getName(){
+    return name;
+}
