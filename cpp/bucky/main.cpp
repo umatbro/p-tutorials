@@ -1,12 +1,47 @@
 #include <iostream>
 #include "odc/12_13_14_introduction_to_objects.h"
+#include "odc/27_random_number_generator.h"
 
 int main() {
+    srand(time(NULL));
+
     Klasa obiekt("ELO");
     cout << obiekt.getName() << endl;
     obiekt.coolSaying();
 
     obiekt.setName("Sir Ser");
     cout << obiekt.getName() << endl;
+    cout << "Losowa liczba z przedziału 10-13: " << rndnum(10,14) << endl;
+
+    int tab[5];
+    for (int i = 0; i<5; i++){
+        tab[i] = 0;
+    }
+    for (int i = 0; i < 100000; i++){
+        int rnd = rndnum(10,14);
+        switch(rnd){
+            case 10:
+                tab[0]++;
+                break;
+            case 11:
+                tab[1]++;
+                break;
+            case 12:
+                tab[2]++;
+                break;
+            case 13:
+                tab[3]++;
+                break;
+            case 14:
+                tab[4]++;
+                break;
+        }
+    }
+
+    cout << "10: " << tab[0] << endl;
+    cout << "11: " << tab[1] << endl;
+    cout << "12: " << tab[2] << endl;
+    cout << "13: " << tab[3] << endl;
+    cout << "14: " << tab[4] << endl;
     return 0;
 }
