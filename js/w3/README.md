@@ -48,11 +48,11 @@ x !== "5" // true
 ### Ternary operator
 `variable = test == "is true?" ? true : false`
 
-### Break and continue
+## Break and continue
 `break` - breaks loop and continues executing
 `continue` - breaks only one iteration and continues with the next iteration of the loop
 
-### Type conversion
+## Type conversion
 In JS there are 5 data types:
 * string
 * number
@@ -91,4 +91,4 @@ let y = "5"; // y is a string
 let x = + y; // x is a number
 ```
 
-For more conversions (boolean-number, date-number, etc.) visit [W3Schools](https://www.w3schools.com/Js/js_type_conversion.asp)
+#### For more conversions (boolean-number, date-number, etc.) visit [W3Schools](https://www.w3schools.com/Js/js_type_conversion.asp)
