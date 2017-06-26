@@ -46,8 +46,49 @@ x !== "5" // true
 ```
 
 ### Ternary operator
-`variable = test == "is true?" true : false`
+`variable = test == "is true?" ? true : false`
 
 ### Break and continue
 `break` - breaks loop and continues executing
 `continue` - breaks only one iteration and continues with the next iteration of the loop
+
+### Type conversion
+In JS there are 5 data types:
+* string
+* number
+* boolean
+* object (3 types of objects):
+  * Object
+  * Date
+  * Array
+* function
+And 2 data types that cannot contain values:
+* null
+* undefined
+
+#### Converting numbers to strings
+```js
+let x = 10;
+y = String(x);
+```
+The Number method `toString()` does the same.
+```js
+x.toString()
+```
+#### Converting Strings to Numbers
+Global method `Number()` can convert strings to numbers
+```js
+Number("3.14")  // returns 3.14
+Number(" ")   // returns 0
+Number("")  // returns 0
+Number("99 88") // returns NaN
+```
+
+#### Unary + operator
+Unary + operator can be used to convert a variable to a number
+```js
+let y = "5"; // y is a string
+let x = + y; // x is a number
+```
+
+For more conversions (boolean-number, date-number, etc.) visit [W3Schools](https://www.w3schools.com/Js/js_type_conversion.asp)
