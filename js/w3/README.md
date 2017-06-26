@@ -47,3 +47,7 @@ x !== "5" // true
 
 ### Ternary operator
 `variable = test == "is true?" true : false`
+
+### Break and continue
+`break` - breaks loop and continues executing
+`continue` - breaks only one iteration and continues with the next iteration of the loop
