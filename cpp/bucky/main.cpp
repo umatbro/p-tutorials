@@ -1,6 +1,7 @@
 #include <iostream>
 #include "odc/12_13_14_introduction_to_objects.h"
 #include "odc/27_random_number_generator.h"
+#include "odc/31_recursion.h"
 
 int main() {
     srand(time(NULL));
@@ -43,5 +44,9 @@ int main() {
     cout << "12: " << tab[2] << endl;
     cout << "13: " << tab[3] << endl;
     cout << "14: " << tab[4] << endl;
+    cout << "----------" << endl;
+    cout << "Recursion" << endl;
+    cout << "Factorial 5: " << factorialFinder(5) << endl;
+
     return 0;
 }
