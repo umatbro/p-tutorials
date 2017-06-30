@@ -13,3 +13,11 @@ int x = 20;
 cout << ++x; // x will be incremented before printing - so the value printed will be 21
 cout << x;   // this will still print 21
 ```
+
+## Tutorial 40 - sizeof
+Cool trick - get number get number of elements in an array
+```c++
+double table[30];
+int sizeOfTable = sizeof(table) / sizeof(table[0]);
+```
+Size of `table` is being computed by dividing size of whole array by size of only one element.

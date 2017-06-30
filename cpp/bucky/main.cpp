@@ -51,5 +51,6 @@ int main() {
 
     cout << "Print array: " << endl;
     printArray(tab, 5);
+    cout << "Size of array: " << sizeof(tab) / sizeof(tab[0]) << endl;
     return 0;
 }
