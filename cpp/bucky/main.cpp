@@ -2,6 +2,7 @@
 #include "odc/12_13_14_introduction_to_objects.h"
 #include "odc/27_random_number_generator.h"
 #include "odc/31_recursion.h"
+#include "odc/35_arrays_in_functions.h"
 
 int main() {
     srand(time(NULL));
@@ -18,7 +19,7 @@ int main() {
     for (int i = 0; i<5; i++){
         tab[i] = 0;
     }
-    for (int i = 0; i < 100000; i++){
+    for (int i = 0; i < 10000; i++){
         int rnd = rndnum(10,14);
         switch(rnd){
             case 10:
@@ -48,5 +49,7 @@ int main() {
     cout << "Recursion" << endl;
     cout << "Factorial 5: " << factorialFinder(5) << endl;
 
+    cout << "Print array: " << endl;
+    printArray(tab, 5);
     return 0;
 }
