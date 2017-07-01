@@ -6,7 +6,8 @@
 #define BUCKY_12_13_14_INTRODUCTION_TO_OBJECTS_H
 #include <iostream>
 #include <string>
-using namespace std;
+#include "namespaces.cpp"
+using namespace mat_std;
 
 class Klasa {
 private:
