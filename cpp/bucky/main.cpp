@@ -4,6 +4,7 @@
 #include "odc/27_random_number_generator.h"
 #include "odc/31_recursion.h"
 #include "odc/35_arrays_in_functions.h"
+#include "odc/44_const_objects/Sally.h"
 
 using namespace mat_std;
 
@@ -56,5 +57,9 @@ int main() {
     printArray(tab, 5);
     cout << "Size of array: " << sizeof(tab) / sizeof(tab[0]) << endl;
     cout << "sizeof(int): " << sizeof(int) << endl;
+
+    const Sally constObj;
+    constObj.printShiz2();
+
     return 0;
 }
