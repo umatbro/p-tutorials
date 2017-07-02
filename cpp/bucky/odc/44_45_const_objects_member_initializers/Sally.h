@@ -6,11 +6,13 @@
 #define BUCKY_SALLY_H
 
 class Sally {
+private:
+    int regVar; // regular variable
+    const int constVar; // constant variable
 public:
-    Sally();
-
+    Sally(int a, int b);
+    void print();
     void printShiz();
-
     void printShiz2() const;
 };
 

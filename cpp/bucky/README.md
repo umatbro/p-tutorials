@@ -21,3 +21,25 @@ double table[30];
 int sizeOfTable = sizeof(table) / sizeof(table[0]);
 ```
 Size of `table` is being computed by dividing size of whole array by size of only one element.
+
+## Tutorial 45 - member initializers
+
+Members of a such class: 
+```c++
+class Sally {
+private:
+    int regVar; // regular variable
+    const int constVar; // constant variable
+public:
+    Sally(int a, int b);
+    void print();
+};
+```
+can be initialized this way:
+```c++
+Sally::Sally(int a, int b)
+: regVar(a), constVar(b)
+{}
+```
+Syntax to assign values to class members is following
+Constructor -> arguments in brackets -> colon -> member(argument) (...) -> constructor body
