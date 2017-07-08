@@ -1,0 +1,10 @@
+certifi==2017.4.17
+chardet==3.0.4
+Django==1.11.3
+idna==2.5
+olefile==0.44
+patool==1.12
+Pillow==4.2.1
+pytz==2017.2
+requests==2.13.0
+urllib3==1.21.1
