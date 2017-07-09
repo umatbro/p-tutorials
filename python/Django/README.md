@@ -24,3 +24,33 @@ To start lightweight development server run command
 ```
 $ python manage.py runserver <ip_adress:port>
 ```
+
+### Creating new Django application
+To create new application run command
+```
+$ python manage.py startapp <app_name>
+```
+Remember to put application name in `INSTALLED_APPS` list in `settings.py` file in your project directory.
+```python
+# settings.py
+# (...)
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    # (...)
+    'rango', # new app name
+]
+```
+
+Also remember in project's `urls.py` add mapping to the application
+
+```python
+# urls.py
+from django.conf.urls import include, url
+from django.contrib import admin
+
+urlpatterns = [
+    url(r'^admin/', admin.site.urls),
+    url(r'^rango/', include('rango.urls')),
+]
+```
+You can also create new file `urls.py` in app directory to map URLs to views. Those views should be configured in `views.py` file.

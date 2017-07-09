@@ -8,3 +8,6 @@ from django.http import HttpResponse
 
 def index(request):
     return HttpResponse("I say hello world!")
+
+def about(request):
+    return HttpResponse("Here is the about page")
