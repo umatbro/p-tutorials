@@ -14,7 +14,12 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
 
+# tango tutorial - commented out but leave it to see how to do it manually
+# SETTINGS_DIR = os.path.dirname(__file__)
+# PROJECT_PATH = os.path.join(SETTINGS_DIR, os.pardir)
+# PROJECT_PATH = os.path.abspath(PROJECT_PATH)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -25,7 +30,7 @@ SECRET_KEY = '1m(#6rh4*(l+dq!2kal5(k8gwz31^0&m70!nek4tqplxzvg%fu'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.50.117.108', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['10.50.117.108', 'localhost', '127.0.0.1', '192.168.0.115']
 
 
 # Application definition
@@ -55,7 +60,9 @@ ROOT_URLCONF = 'tango_with_django_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            TEMPLATE_PATH,
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

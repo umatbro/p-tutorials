@@ -7,7 +7,9 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 def index(request):
-    return HttpResponse("I say hello world!")
+    return render(request, 'rango/index.html', {
+        'boldmessage' : 'I\'m bold font from the context'
+    })
 
 def about(request):
     return HttpResponse("Here is the about page")
