@@ -13,3 +13,15 @@ def index(request):
 
 def about(request):
     return HttpResponse("Here is the about page")
+
+def chapter4(request):
+    data = {
+        "Kas" : "ass",
+        "Tal" : "ass",
+        "Ash" : "mrk",
+        "TwF" : "mag",
+        "Jce" : "war",
+        "War" : "war",
+        "Zac" : "tnk",
+    }
+    return render(request, 'rango/chapter4.html', { 'data' : data })

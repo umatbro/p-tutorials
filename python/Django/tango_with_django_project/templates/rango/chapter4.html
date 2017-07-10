@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+{% load static %}
+<html>
+<head>
+  <title>Rango</title>
+</head>
+<body>
+  <h1>This is chapter 4 completed</h1>
+  Now i will print a dictionary in a loop: <br/>
+  <ul>
+  {% for key, value in data.items %}
+    <li><b>K:</b> {{ key }} <b>V:</b> {{ value }} </li>
+  {% endfor %}
+  </ul>
+  <a href="/">Home</a><br/>
+  <img src="{% static 'd.jpg' %}" alt="Destroyer" width="300px"/>
+</body>
+</html>
