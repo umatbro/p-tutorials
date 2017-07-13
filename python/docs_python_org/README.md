@@ -16,3 +16,13 @@ range(0,10,3)
 range(-10,-100,-30)
   -10, -40, -70 (! no -100)
   ```
+
+## Classes
+#### Tip - static variables
+Variables declared inside class definition but not inside a method are class (static) variables
+```python
+class ExampleClass:
+  staticVar = 0
+  def __init__(self):
+    self.nonStaticVariable = True
+```
