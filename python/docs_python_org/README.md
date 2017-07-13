@@ -15,7 +15,7 @@ range(0,10,3)
   0,3,6,9
 range(-10,-100,-30)
   -10, -40, -70 (! no -100)
-  ```
+```
 
 ## Classes
 #### Tip - static variables
