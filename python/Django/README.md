@@ -1,5 +1,5 @@
 # Django tutorial
-Follownig book ***How to Tango with Django***
+Follownig book ***How to Tango with Django*** and ***[Django official tutorial](https://docs.djangoproject.com/en/1.11/intro/tutorial01/)***
 
 ## Notes
 ### Sharing package list
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     # (...)
     'rango', # new app name
+    'polls.apps.PollsConfig', # attaching config method from apps package (probably better practice)
 ]
 ```
 
