@@ -1,42 +1,18 @@
-"""Module to easily maintain charts displayed on website"""
+"""Module to easily maintain charts using Chart.js library"""
 import json
 from collections import namedtuple
-from colors import DEFAULT_COLOR
-
-# chart types
-LINE = 'line'  # line chart
-BAR = 'bar'  # bar chart
-
-# DEFAULT VALUES
-
-# options
-DEFAULT_OPTIONS = {
-    'scales': {
-        'xAxes': [{
-            'gridLines': {
-                'display': False
-            }
-        }],
-        'yAxes': [{
-            'ticks': {
-                'min': 0,
-                'max': 100,
-                'stepSize': 20
-            }
-        }]
-    },
-    'maintainAspectRatio': True,
-    'responsive': True,
-}
+from copy import deepcopy
+from motool.magic.utils import merge_dicts
+from colors import color_queue, COLOR_ORDER, Color
+from options import DEFAULT_OPTIONS, ChartType, LINE_CHART_DATASET_OPTIONS
 
 
 class Chart:
-    def __init__(self, datasets=None, title=None, options=None, canvas_id='chart', var_name='chart', chart_type=BAR):
+    def __init__(self, datasets=None, title=None, options=None, id='chart', chart_type=ChartType.BAR):
         if options is None:
             options = {}
         self.title = title
-        self.canvas_id = canvas_id
-        self.js_var_name = var_name
+        self.id = id  # id will be used to set HTML canvas id and JavaScript variable name
         self.chart_type = chart_type
         if isinstance(datasets, Dataset):
             self.datasets = [datasets]
@@ -45,46 +21,30 @@ class Chart:
         else:
             raise TypeError('Wrong dataset type')
 
-        self.normalize_datasets()
         self.options = options
 
-    def normalize_datasets(self):
-        """
-        Force all datasets.data to  have same keys
-        If some argument has no value assigned - None will be found under this key
-        :return: namedtuple ('labels', 'datasets') where labels are keys in all datasets
-        """
-        # get key list
-        labels = set()
-        for dataset in self.datasets:
-            for argument in dataset.data.keys():
-                labels.add(argument)
-
-        # change datasets so all dataset.data have same keys
-        for dataset in self.datasets:
-            for label in labels:
-                try:
-                    dataset.data[label] = dataset.data[label]
-                except KeyError:
-                    dataset.data[label] = None
-        Datasets = namedtuple('Datasets', ['labels', 'datasets'])
-        return Datasets(labels=labels, datasets=self.datasets)
-
-    def datasets_array(self):
-        """:return array of dictionaries that contain dataset data"""
-        return [{
-            'label': dataset.label,
-            'backgroundColor': dataset.background_color,
-            'data': [value for argument, value in dataset.data.items()]
-        } for dataset in self.datasets]
-
-    def get_data_dict(self):
+    def get_data_dict(self, decimal_places=6, sort=True):
         """:return dictionary representing data object
         will force all datasets to have same arguments"""
-        normalized = self.normalize_datasets()
+        # create labels set
+        labels = set()
+        datasets_copy = deepcopy(self.datasets)
+        for dataset in datasets_copy:
+            for argument in dataset.data.keys():
+                labels.add(argument)
+                if argument not in dataset.data.keys():
+                    dataset.data[argument] = None
+
+        # sort labels depending on the 'sort' flag
+        sorted_labels = sorted(labels) if sort else labels
+
+        datasets = [merge_dicts({
+            'label': dataset.label,
+            'data': [round(dataset.data[label], decimal_places) for label in sorted_labels]
+        }, dataset.settings) for dataset in datasets_copy]
         return {
-            'labels': list(normalized.labels),
-            'datasets': self.datasets_array(),
+            'labels': [label for label in sorted_labels],
+            'datasets': datasets
         }
 
     def get_dict(self):
@@ -100,36 +60,60 @@ class Chart:
         return json.dumps(self.get_dict())
 
     def create_js_var(self):
-        return 'var {} = new Chart(document.getElementById("{}").getContext("2d"), JSON.parse(\'{}\'))'.format(
-            self.js_var_name,
-            self.canvas_id,
+        return 'var {0} = new Chart(document.getElementById("{0}").getContext("2d"), JSON.parse(\'{1}\'))'.format(
+            self.id,
             self.get_json()
         )
 
     def set_options(self, options):
         self.options = options
 
+    def generate_html(self):
+        return '<canvas id="{}"></canvas>'.format(self.id)
+
+    def generate_js(self):
+        return self.create_js_var()
+
+    def generate_website_code(self):
+        return '{}\n<script>\n\t{}\n</script>'.format(self.generate_html(), self.generate_js())
+
+    def get_code(self, title=None):
+        """
+        :return named tuple containing html and js
+        """
+        if title is None:
+            title = self.title
+        ChartTuple = namedtuple('Chart', ['title', 'html', 'js'])
+        return ChartTuple(title=title, html=self.generate_html(), js=self.generate_js())
+
 
 class Dataset:
-    def __init__(self, label='', arguments=None, values=None, background_color=DEFAULT_COLOR):
+    def __init__(self, label='', arguments=None, values=None, settings=None):
+        """
+        :param label: Dataset label (name of data series)
+        :param arguments: x axis
+        :param values: y axis
+        :param settings: additional settings. Must be a JS-like object dictionary.
+        """
         if values is None:
             values = []
         if arguments is None:
             arguments = []
+        if settings is None:
+            settings = {}
 
         self.label = label
         self.data = dict(zip(arguments, values))
-        self.background_color = background_color
+        self.settings = settings
 
     def get_dict(self):
         """
         :return: Python dictionary that can be easily converted to JSON (js function: JSON.parse())
         """
-        return {
+        return merge_dicts({
             'label': self.label,
-            'backgroundColor': self.background_color,
-            'data': [values for arguments, values in self.data.items()]
-        }
+            'data': [self.data[argument] for argument in self.data.keys()]
+        }, self.settings)
 
     def get_json(self):
         return json.dumps(self.get_dict())
@@ -138,43 +122,48 @@ class Dataset:
         return self.get_json()
 
 
-def generate_html(chart):
-    return '<canvas id="{}"></canvas>'.format(chart.canvas_id)
-
-
-def generate_js(chart):
-    return chart.create_js_var()
-
-
-def generate_website_code(chart):
-    return '{}\n<script>\n\t{}\n</script>'.format(generate_html(chart), generate_js(chart))
-
-
-def datasets_from_stat_dict(stat_dict):
+def datasets_from_pavlo_stat_dict(stat_dict):
     """
     :param stat_dict: JSON string from rop_statistic table (column stat_dict)
     :return: list containing Dataset objects
     """
     stat_dict = json.loads(stat_dict)
-    # pop labels
+    # pop labels (arguments)
     labels = stat_dict.pop('labels', [])
+    # pop useless field
+    try:
+        stat_dict.pop('time')
+        stat_dict.pop('Node')
+    except KeyError:
+        pass
+
+    # return list with datasets which can be used to create chart
+    color_generator = color_queue(COLOR_ORDER)
     return [Dataset(
         label=key,
         arguments=labels,
-        values=value
+        values=value,
+        settings=merge_dicts(DEFAULT_OPTIONS, {'borderColor': next(color_generator)})
     ) for key, value in stat_dict.items()]
 
 
-if __name__ == '__main__':
-    d1 = Dataset('jeden', [1, 2, 3, 4, 5], [5, 4, 2, 3, 1])
-    d2 = Dataset('dwa', [1, 3, 4, 5, ], [1, 2, 4, 5])
-    d1.background_color = 'rgba(120, 1, 1, 0.5)'
-    # d2.background_color = 'rgba(130, 130, 1, 0.5)'
-    print(str(d1))
-    chart = Chart([d1, d2], options=DEFAULT_OPTIONS, chart_type=LINE)
-    print(json.dumps(chart.get_data_dict()))
-    print(chart.create_js_var())
-    print(generate_website_code(chart))
+def dataset_from_stat_dict(stat_dict, label='', border_color=Color.DEFAULT_COLOR, settings=None):
+    """
+    Handle bartolomeo stat_dicts (Traffic stats)
+    Remember to add label to Dataset returned from this function
+    :param border_color: color of the dataset on the chart
+    :param label: name of dataset
+    :param settings: additional settings (passed as dictionary)
+    :param stat_dict: JSON string from rop_statistic table (column stat_dict)
+    :return: list containing Dataset objects
+    """
+    if settings is None or not isinstance(settings, dict):
+        settings = {}
+    stat_dict = json.loads(stat_dict)
+    return Dataset(
+        label=label,
+        arguments=[timestamp[6:16] for timestamp in stat_dict['timestamps']],
+        values=stat_dict['values'],
+        settings=merge_dicts(LINE_CHART_DATASET_OPTIONS, {'borderColor': border_color}, settings)
+    )
 
-    for dataset in datasets_from_stat_dict('{\"Node\": [], \"Pint_R_D\": [], \"labels\": [], \"Pint_A\": [], \"AV\": [], \"time\": []}'):
-        print(dataset)
