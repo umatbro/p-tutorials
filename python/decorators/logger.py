@@ -20,6 +20,7 @@ def add(x, y):
 def sub(x, y):
     return x - y
 
+
 add_logger = logger(add)
 sub_logger = logger(sub)
 
