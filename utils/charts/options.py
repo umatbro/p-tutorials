@@ -1,3 +1,7 @@
+"""
+Module with predefined chart settings
+"""
+
 # options
 DEFAULT_OPTIONS = {
     'scales': {
