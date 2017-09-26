@@ -1,3 +1,7 @@
+"""
+Utility functions for chatrs package
+"""
+
 def merge_dicts(dict_primary, *to_merge):
     """
     Merge multiple *to_merge dictionaries to dict_primary

@@ -44,7 +44,7 @@ class Color:
 
 
 # default color order for subsequent datasets
-COLOR_ORDER = [
+COLOR_ORDER = (
     Color.GREEN800,
     Color.BLUE800,
     Color.RED800,
@@ -52,7 +52,7 @@ COLOR_ORDER = [
     Color.PALE_YELLOW,
     Color.PURPLE900,
     Color.INDIGO200
-]
+)
 
 
 def color_queue(color_order=COLOR_ORDER):

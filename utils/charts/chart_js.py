@@ -1,12 +1,13 @@
 """
 Module to easily maintain charts using Chart.js library
 """
+
 import json
 from collections import namedtuple
 from copy import deepcopy
-from motool.magic.utils import merge_dicts
-from colors import color_queue, COLOR_ORDER, Color
-from options import DEFAULT_OPTIONS, ChartType, LINE_CHART_DATASET_OPTIONS
+from charts.utils import merge_dicts
+from charts.colors import color_queue, COLOR_ORDER, Color
+from charts.options import DEFAULT_OPTIONS, ChartType, LINE_CHART_DATASET_OPTIONS
 
 
 class Chart(object):
@@ -15,7 +16,7 @@ class Chart(object):
 
     One chart can store multiple datasets (which means you will be able to display many lines on one line chart)
     """
-    def __init__(self, datasets=None, title=None, options=None, id='chart', chart_type=ChartType.BAR):
+    def __init__(self, datasets=None, title=None, options=None, chart_id='chart', chart_type=ChartType.BAR):
         if options is None:
             options = {}
         if isinstance(datasets, Dataset):
@@ -28,7 +29,7 @@ class Chart(object):
             raise TypeError('Dataset not valid')
 
         self.title = title
-        self.id = id  # id will be used to set HTML canvas id and JavaScript variable name
+        self.id = chart_id  # id will be used to set HTML canvas id and JavaScript variable name
         self.chart_type = chart_type
         self.options = options
 
