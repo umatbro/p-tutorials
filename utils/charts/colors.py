@@ -1,5 +1,6 @@
-from collections import deque
-from copy import deepcopy
+"""
+Color utilities for Charts and Datasets
+"""
 
 
 class Color:
@@ -42,9 +43,8 @@ class Color:
         return 'rgba({r}, {g}, {b}, {opacity})'.format(r=r, g=g, b=b, opacity=opacity)
 
 
-# COLOR_ORDER = deque(['GREEN800', 'BLUE800', 'RED800', 'ORANGE', 'PALE_YELLOW', 'PURPLE900', 'INDIGO200'])
 # default color order for subsequent datasets
-COLOR_ORDER = [
+COLOR_ORDER = (
     Color.GREEN800,
     Color.BLUE800,
     Color.RED800,
@@ -52,11 +52,11 @@ COLOR_ORDER = [
     Color.PALE_YELLOW,
     Color.PURPLE900,
     Color.INDIGO200
-]
+)
 
 
 def color_queue(color_order=COLOR_ORDER):
-    color_order = deepcopy(color_order)
-    color_order.extend([Color.DEFAULT_COLOR] * 100)
     for color in color_order:
         yield color
+    while 1337:
+        yield Color.DEFAULT_COLOR
