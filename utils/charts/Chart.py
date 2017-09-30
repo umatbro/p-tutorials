@@ -3,8 +3,8 @@ import json
 from collections import namedtuple
 from copy import deepcopy
 from motool.magic.utils import merge_dicts
-from colors import color_queue, COLOR_ORDER, Color
-from options import DEFAULT_OPTIONS, ChartType, LINE_CHART_DATASET_OPTIONS
+from colors import Color
+from options import ChartType, LINE_CHART_DATASET_OPTIONS
 
 
 class Chart:
@@ -24,8 +24,10 @@ class Chart:
         self.options = options
 
     def get_data_dict(self, decimal_places=6, sort=True):
-        """:return dictionary representing data object
-        will force all datasets to have same arguments"""
+        """
+        :return dictionary representing data object
+        will force all datasets to have same arguments
+        """
         # create labels set
         labels = set()
         datasets_copy = deepcopy(self.datasets)
@@ -48,34 +50,40 @@ class Chart:
         }
 
     def get_dict(self):
-        """:return dict that can be transformed to JSON.
-         This data can be used to create JavaScript Chart object from Chart.js library"""
+        """
+        :return dict that can be transformed to JSON.
+        This data can be used to create JavaScript Chart object from Chart.js library
+        """
         return {
             'type': self.chart_type,
             'data': self.get_data_dict(),
             'options': self.options
         }
 
-    def get_json(self):
+    @property
+    def json(self):
         return json.dumps(self.get_dict())
 
     def create_js_var(self):
         return 'var {0} = new Chart(document.getElementById("{0}").getContext("2d"), JSON.parse(\'{1}\'))'.format(
             self.id,
-            self.get_json()
+            self.json
         )
 
     def set_options(self, options):
         self.options = options
 
-    def generate_html(self):
+    @property
+    def html(self):
         return '<canvas id="{}"></canvas>'.format(self.id)
 
-    def generate_js(self):
+    @property
+    def js(self):
         return self.create_js_var()
 
-    def generate_website_code(self):
-        return '{}\n<script>\n\t{}\n</script>'.format(self.generate_html(), self.generate_js())
+    @property
+    def code(self):
+        return '{}\n<script>\n\t{}\n</script>'.format(self.html, self.js)
 
     def get_code(self, title=None):
         """
@@ -84,7 +92,7 @@ class Chart:
         if title is None:
             title = self.title
         ChartTuple = namedtuple('Chart', ['title', 'html', 'js'])
-        return ChartTuple(title=title, html=self.generate_html(), js=self.generate_js())
+        return ChartTuple(title=title, html=self.html, js=self.js)
 
 
 class Dataset:
@@ -115,55 +123,34 @@ class Dataset:
             'data': [self.data[argument] for argument in self.data.keys()]
         }, self.settings)
 
-    def get_json(self):
+    @property
+    def json(self):
         return json.dumps(self.get_dict())
 
     def __str__(self):
-        return self.get_json()
+        return self.json
 
 
-def datasets_from_pavlo_stat_dict(stat_dict):
+def dataset_from_json(json_data, label='', border_color=Color.DEFAULT_COLOR, settings=None):
     """
-    :param stat_dict: JSON string from rop_statistic table (column stat_dict)
-    :return: list containing Dataset objects
-    """
-    stat_dict = json.loads(stat_dict)
-    # pop labels (arguments)
-    labels = stat_dict.pop('labels', [])
-    # pop useless field
-    try:
-        stat_dict.pop('time')
-        stat_dict.pop('Node')
-    except KeyError:
-        pass
+    Create Dataset object out of JSON.
+    JSON should have two fields with arrays: arguments and values.
 
-    # return list with datasets which can be used to create chart
-    color_generator = color_queue(COLOR_ORDER)
-    return [Dataset(
-        label=key,
-        arguments=labels,
-        values=value,
-        settings=merge_dicts(DEFAULT_OPTIONS, {'borderColor': next(color_generator)})
-    ) for key, value in stat_dict.items()]
-
-
-def dataset_from_stat_dict(stat_dict, label='', border_color=Color.DEFAULT_COLOR, settings=None):
-    """
-    Handle bartolomeo stat_dicts (Traffic stats)
-    Remember to add label to Dataset returned from this function
     :param border_color: color of the dataset on the chart
     :param label: name of dataset
     :param settings: additional settings (passed as dictionary)
-    :param stat_dict: JSON string from rop_statistic table (column stat_dict)
-    :return: list containing Dataset objects
+    :param json_data: JSON string
+    :return: Dataset object
     """
     if settings is None or not isinstance(settings, dict):
         settings = {}
-    stat_dict = json.loads(stat_dict)
-    return Dataset(
-        label=label,
-        arguments=[timestamp[6:16] for timestamp in stat_dict['timestamps']],
-        values=stat_dict['values'],
-        settings=merge_dicts(LINE_CHART_DATASET_OPTIONS, {'borderColor': border_color}, settings)
-    )
-
+    json_data = json.loads(json_data)
+    try:
+        return Dataset(
+            label=label,
+            arguments=json_data['arguments'],
+            values=json_data['values'],
+            settings=merge_dicts(LINE_CHART_DATASET_OPTIONS, {'borderColor': border_color}, settings)
+        )
+    except KeyError:
+        return None
