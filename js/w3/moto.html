@@ -1,0 +1,45 @@
+<html>
+<meta charset="utf-8" />
+<body>
+<script>
+class Example{
+  constructor (i=2, a=";)") {
+    this.i = i;
+    this.a = a;
+    this.dwa = 2;
+  }
+
+  toString() {
+    return this.a + " ";
+  }
+}
+
+Object.defineProperty(Example, 'XX', {
+  value: 'XD',
+  writable: false,
+  enumerable: false,
+  configurable: false
+});
+
+ex = new Example(1);
+console.log(ex);
+
+</script>
+
+<script>
+let map = new Map();
+map.set(1, "jeden");
+map.set(2, "dwa");
+map.set(3, "trzy");
+map.set(4, "cztery");
+map.set(5, "pięć");
+for (let [key, value] of map) {
+  console.log("KEY: " + key + "\tVALUE: " + value);
+}
+
+for (let item of map) {
+  console.log(item);
+}
+</script>
+</body>
+</html>
