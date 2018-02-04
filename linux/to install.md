@@ -10,7 +10,14 @@ apt-get install screen curl sudo man git-core
 apt-get install build-essential
 ```
 
-Packages for building python
+### Setting system locale encoding
+
+[Meaningful source](https://unix.stackexchange.com/a/269293).
+
+To change system *locale* edit ``/etc/locale.gen`` file - uncomment encoding suitable for your system, say `en_US.UTF-8`.
+Then run `locale-gen` as a root.
+
+### Packages for building python
 
 ```bash
 apt-get install libsqlite3-dev
