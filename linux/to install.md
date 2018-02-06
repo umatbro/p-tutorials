@@ -44,3 +44,13 @@ make
 make test
 make install
 ```
+
+## Other
+
+Set proper timezone on your system
+
+```bash
+dpkg-reconfigure tzdata
+```
+
+Then select your timezone from one of available options.
