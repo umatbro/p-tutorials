@@ -76,11 +76,11 @@ def f(x: float, a: float=None, b: float=None) -> float:
     return a * x + b
 
 
-def is_above_line(x: float, y: float, f: Callable[float, float]) -> bool:
+def is_above_line(x: float, y: float, f: Callable[[float], float]) -> bool:
     return y > f(x)
 
 
-def train(perceptron: Perceptron, n_iters: int, func: Callable[float, float], rate):
+def train(perceptron: Perceptron, n_iters: int, func: Callable[[float], float], rate):
     """
     Generate random test points and feed them to perceptron.
     Then compare answer against the solution.
@@ -93,7 +93,7 @@ def train(perceptron: Perceptron, n_iters: int, func: Callable[float, float], ra
         perceptron.adjust(point, target, rate)
 
 
-def verify(perceptron: Perceptron, func: Callable[float, float]) -> int:
+def verify(perceptron: Perceptron, func: Callable[[float], float]) -> int:
     """
     Verify the percentage of correct perceptron answers.
     Function runs 100 tests and checks correctness.
