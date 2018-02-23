@@ -10,6 +10,18 @@ $(document).ready(() => {
 
     // add user button click
     $('#btnAddUser').on('click', addUser);
+
+    // delete user link click
+    $('#userList').find('table tbody').on('click', 'td a.linkdeleteuser', deleteUser);
+
+    $('#xd').on('click', event => {
+        event.preventDefault();
+        $.ajax({
+            type: 'GET',
+            url: '/hej',
+            data: { twoja: 'stara' }
+        })
+    });
 });
 
 function populateTable() {
@@ -88,5 +100,26 @@ function addUser(event) {
         alert(`Please fill in all fields`);
         return false;
     }
+}
+
+function deleteUser(event) {
+    event.preventDefault();
+
+    // pop up confirmation dialog
+    let confirmation = confirm('Are you sure you want to delete user?');
+
+    if (confirmation === false) return false;
+
+    // if user agrees - delete db entry
+    let options = {
+        type: 'DELETE',
+        url: '/users/deleteuser/',
+        data: {id: $(this).attr('rel')}
+    };
+    console.log(options);
+    $.ajax(options).done(response => {
+        if (response.msg !== '') alert(`Error: ${response.msg}`);
+        populateTable();
+    })
 }
 
