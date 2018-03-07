@@ -8,6 +8,7 @@
   * [Getting Started with Node.js and Mocha](https://semaphoreci.com/community/tutorials/getting-started-with-node-js-and-mocha)
   * [Unit Testing Express Routers](http://evanshortiss.com/development/javascript/2016/04/15/express-testing-using-ioc.html)
   * [Mongoose models and unit tests: The definitive guide](https://codeutopia.net/blog/2016/06/10/mongoose-models-and-unit-tests-the-definitive-guide/)
+  * [Test a Node RESTful API with Mocha and Chai](https://scotch.io/tutorials/test-a-node-restful-api-with-mocha-and-chai)
 
 ## TypeScript
 * [Getting started with TypeScript + Node.js](https://blog.risingstack.com/building-a-node-js-app-with-typescript-tutorial/)
