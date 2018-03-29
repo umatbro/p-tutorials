@@ -1,0 +1,11 @@
+* TDD!!
+* REST
+* simplicity
+* co i jak ma robić apka
+* od razu myśleć o paginacji
+* system userów
+* docker
+
+1. Design endpoints.
+2. write tests
+3. write code
