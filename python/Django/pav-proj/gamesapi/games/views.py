@@ -53,4 +53,3 @@ def game_detail(request, pk):
     elif request.method == 'DELETE':
         game.delete()
         return HttpResponse(status=status.HTTP_204_NO_CONTENT)
-    
