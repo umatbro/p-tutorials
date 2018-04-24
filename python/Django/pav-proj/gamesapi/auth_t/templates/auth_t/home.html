@@ -1,0 +1,22 @@
+{% extends 'auth_t/base.html' %}
+
+{% block content %}
+{% with user.is_authenticated as auth %}
+    <div class="row">
+        <div class="col-md-8">
+        <h1>
+            {% if auth %}Hello, {{ user.username }}{% else %}You are not logged in{% endif %}
+        </h1>
+        </div>
+        <div class="col-md-4 card">
+            <h2>Panel</h2>
+            {% if user.is_authenticated %}
+                <p><a href="{% url 'auth_t:logout' %}">Logout</a></p>
+            {% else %}
+            <p><a href="{% url 'auth_t:login' %}">Login</a></p>
+            <p><a href="{% url 'auth_t:register' %}">Register</a></p>
+            {% endif %}
+        </div>
+    </div>
+    {% endwith %}
+{% endblock %}

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'games.apps.GamesConfig',
+    'auth_t.apps.AuthTConfig',
 
     'rest_framework',
 ]

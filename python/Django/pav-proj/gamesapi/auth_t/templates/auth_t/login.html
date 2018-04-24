@@ -1,0 +1,9 @@
+{% extends 'auth_t/base.html' %}
+
+{% block content %}
+    <form action="{% url 'auth_t:login' %}" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Login">
+    </form>
+{% endblock %}

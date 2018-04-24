@@ -1,0 +1,44 @@
+body
+{
+    font-family: 'Amatic SC', cursive;
+    background: radial-gradient(circle, #7a306c, #0c1b33);
+    color: #b2aa8e;
+    font-size: 2em;
+}
+
+a
+{
+    color: inherit;
+    -webkit-transition: color 0.3s;
+    -moz-transition: color 0.3s;
+    -ms-transition: color 0.3s;
+    -o-transition: color 0.3s;
+    transition: color 0.3s;
+}
+
+a:hover
+{
+    color: #decccc;
+    text-decoration: none;
+    -webkit-transition: color 0.3s;
+    -moz-transition: color 0.3s;
+    -ms-transition: color 0.3s;
+    -o-transition: color 0.3s;
+    transition: color 0.3s;
+}
+
+.card
+{
+    background-color: transparent;
+    min-height: 30vh;
+}
+
+.card > h2
+{
+    font-weight: bold;
+}
+
+.container
+{
+    padding-top: 40px;
+}
