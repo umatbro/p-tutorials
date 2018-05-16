@@ -1,14 +1,12 @@
 from typing import Tuple
 import pygame as pg
 import numpy as np
+from init_types import TYPES
 
 
 class Board:
-    def __init__(self, shape: Tuple[int, int], resolution: int=10):
-        x = np.random.randn(shape[1], shape[0]) - 1
-        x[x > 0] = 1
-        x[x <= 0] = 0
-        self.field = x  # np.random.randint(2, size=shape) #np.zeros(shape)
+    def __init__(self, shape: Tuple[int, int], resolution: int=10, start_type='random'):
+        self.field = TYPES[start_type](shape)
         self.resolution = resolution
 
         lefts = np.arange(0, self.field.shape[1] * resolution, resolution)

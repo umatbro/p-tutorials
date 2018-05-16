@@ -2,7 +2,7 @@ import pygame as pg
 from board import Board
 import sys
 
-field = Board((100, 100))
+field = Board((100, 100), 8)
 
 pg.init()
 w, h = field.width * field.resolution, field.height * field.resolution
