@@ -1,0 +1,61 @@
+from typing import Tuple
+import pygame as pg
+import numpy as np
+
+
+class Board:
+    def __init__(self, shape: Tuple[int, int], resolution: int=10):
+        x = np.random.randn(shape[1], shape[0]) - 1
+        x[x > 0] = 1
+        x[x <= 0] = 0
+        self.field = x  # np.random.randint(2, size=shape) #np.zeros(shape)
+        self.resolution = resolution
+
+        lefts = np.arange(0, self.field.shape[1] * resolution, resolution)
+        tops = np.arange(0, self.field.shape[0] * resolution, resolution)
+
+        self.lefts, self.tops = np.meshgrid(lefts, tops)
+
+    @property
+    def width(self) -> int:
+        return self.field.shape[1]
+
+    @property
+    def height(self) -> int:
+        return self.field.shape[0]
+
+    def neighbours(self, pos: Tuple[int, int]) -> np.ndarray:
+        col, row = pos
+        return self.field[max(0, row-1):row+2, max(0, col-1):col+2]
+
+    def alive_neighbours(self, pos: Tuple[int, int]) -> int:
+        col, row = pos
+        self_state = self.field[row, col]
+        return self.neighbours(pos).sum() - self_state
+
+    def update(self):
+        next_step_array = np.copy(self.field)
+        for index, value in np.ndenumerate(next_step_array):
+            if value == 0:  # dead cell
+                if self.alive_neighbours(index[::-1]) == 3:
+                    next_step_array[index] = 1
+            if value == 1:  # alive cell
+                if not 1 < self.alive_neighbours(index[::-1]) < 4:
+                    next_step_array[index] = 0
+
+        self.field = next_step_array
+        return self.field
+
+    def display(self, screen):
+        """
+        Display field
+
+        :param screen: pygame screen
+        """
+        for left, top, value in zip(np.nditer(self.lefts), np.nditer(self.tops), np.nditer(self.field)):
+
+            pg.draw.rect(
+                screen,
+                (255 * value, ) * 3,  # color
+                pg.Rect(left, top, self.resolution, self.resolution),
+            )
