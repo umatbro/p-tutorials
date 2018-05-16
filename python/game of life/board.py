@@ -2,11 +2,12 @@ from typing import Tuple
 import pygame as pg
 import numpy as np
 from init_types import TYPES
+from rules import RULES
 
 
 class Board:
     def __init__(self, shape: Tuple[int, int], resolution: int=10, start_type='random'):
-        self.field = TYPES[start_type](shape)
+        self.field = TYPES[start_type](shape[::-1])
         self.resolution = resolution
 
         lefts = np.arange(0, self.field.shape[1] * resolution, resolution)
@@ -31,14 +32,15 @@ class Board:
         self_state = self.field[row, col]
         return self.neighbours(pos).sum() - self_state
 
-    def update(self):
+    def update(self, rule='conway'):
+        sel_rule = RULES[rule]
         next_step_array = np.copy(self.field)
         for index, value in np.ndenumerate(next_step_array):
             if value == 0:  # dead cell
-                if self.alive_neighbours(index[::-1]) == 3:
+                if self.alive_neighbours(index[::-1]) in sel_rule.to_resurrect:
                     next_step_array[index] = 1
             if value == 1:  # alive cell
-                if not 1 < self.alive_neighbours(index[::-1]) < 4:
+                if self.alive_neighbours(index[::-1]) not in sel_rule.to_keep_alive:
                     next_step_array[index] = 0
 
         self.field = next_step_array

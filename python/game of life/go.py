@@ -2,7 +2,7 @@ import pygame as pg
 from board import Board
 import sys
 
-field = Board((100, 100), 8)
+field = Board((100, 100), 5, start_type='random')
 
 pg.init()
 w, h = field.width * field.resolution, field.height * field.resolution
@@ -19,6 +19,6 @@ while True:
             pg.quit()
             sys.exit(0)
 
-    field.update()
+    field.update(rule='diamoeba')
     field.display(screen)
     pg.display.flip()
