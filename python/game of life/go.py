@@ -19,6 +19,6 @@ while True:
             pg.quit()
             sys.exit(0)
 
-    field.update(rule='diamoeba')
+    field.update(rule='conway')
     field.display(screen)
     pg.display.flip()
