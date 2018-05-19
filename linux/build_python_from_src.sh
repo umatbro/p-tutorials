@@ -2,6 +2,7 @@
 RELEASE=3.6.3
  
 # install dependencies
+sudo apt-get update && apt-get upgrade
 sudo apt-get install libbz2-dev liblzma-dev libsqlite3-dev libncurses5-dev libgdbm-dev zlib1g-dev libreadline-dev libssl-dev tk-dev
  
 # download and build Python
@@ -13,5 +14,5 @@ cd Python-$RELEASE
 ./configure
 make
 sudo make install
-sudo rm -rf ~/python3/Python-$RELEASE
+sudo rm -rf ~/python3
 cd ~
