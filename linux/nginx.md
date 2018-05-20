@@ -1,5 +1,8 @@
 # nginx
 
+* [uwsgi & django tutorial](http://uwsgi-docs.readthedocs.io/en/latest/tutorials/Django_and_nginx.html)
+* [nginx concepts](https://www.netguru.co/codestories/nginx-tutorial-basics-concepts)
+
 ## basics
 
 * install - ``apt-get install nginx``
