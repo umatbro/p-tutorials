@@ -1,0 +1,1 @@
+[Nice tutorial](https://netfuture.ch/tutorials/crc/software-crc-computation/) on CRC
