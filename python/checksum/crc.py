@@ -7,13 +7,14 @@ def crc(data, n, crc_generator=None):
     :param data: message to calculate checksum from
     :param n: number of bits of checksum
     :param crc_generator: generator, should have n+1 digits (in binary)
-    :return: 2 element tuple containing calculated checksum and generator used to calculate it
+    :return: 2 element tuple containing message with appended
+        calculated checksum and generator used to calculate it
     """
     if crc_generator is None:
         crc_generator = random.getrandbits(n + 1)
     if type(crc_generator) is str:
         crc_generator = int(crc_generator, 2)
-        
+
     # print_b(crc_generator, n+1)
 
     data = int(data, 2)
@@ -28,7 +29,7 @@ def crc(data, n, crc_generator=None):
     while result_data & int('1' * n, 2) == 0:
         # move generator max to the left
         # (there will be trailing 0s in the number - it's OK since 0 does not change
-        # initial value in XOR operation) 
+        # initial value in XOR operation)
         temp_gen = crc_generator << (len(bin(result_data)) - len(bin(crc_generator)))
         # input(f'calculate temporary generator {bin(temp_gen)}')
         # print_pair(result_data, temp_gen)
@@ -36,8 +37,19 @@ def crc(data, n, crc_generator=None):
 
         # input('after applying generator')
         # print_b(result_data)
+    
+    result_msg = (data << n) + result_data
+    return result_msg, crc_generator
 
-    return result_data, crc_generator
+def crc_check(message, crc_generator):
+    while len(bin(message)) > len(bin(crc_generator)):
+        temp_gen = crc_generator << (len(bin(message)) - len(bin(crc_generator)))
+        # print_pair(message, temp_gen)
+        message = message ^ temp_gen
+        # print_b(message)
+       
+    print_b(message)
+    return message == 0
 
 def print_b(number: int, ndigits: int=4):
     formatter = '{{0:0{b}b}}'.format(b=ndigits)
@@ -52,7 +64,10 @@ def print_pair(top, bottom, bottom_spaces=0):
 
 if __name__ == '__main__':
     # crc('11010011101110', 3, '1011')
-    print(tuple(map(bin, crc('0110111', 4, '10011'))))
+    crc_result = crc('0110111', 4, '10011')
+    print(tuple(map(bin, crc_result)))
+     
+    print(crc_check(*crc_result))
 
     # wiki angielska
     # crc('11010011101100', 3, '1011')
