@@ -4,5 +4,6 @@
 *.sqlite3
 workspace.xml
 *-env
+.vscode
 
 .ipynb_checkpoints
