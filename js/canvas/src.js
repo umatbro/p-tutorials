@@ -33,10 +33,39 @@ functions = [
         let canvas = document.querySelector('#smiling-face');
         let ctx = canvas.getContext('2d');
         let [w, h] = [canvas.width, canvas.height];
+        
         ctx.beginPath();
-        console.log(w, h);
-        ctx.arc(w/2, h/2, 10, 0, Math.PI * 2, true);
-    }
+        // head
+        ctx.arc(75, 75, 50, 0, Math.PI * 2, true);
+        
+        // smile
+        ctx.moveTo(110, 75);
+        ctx.arc(75, 75, 35, 0, Math.PI, false);
+        
+        // eyes
+        ctx.moveTo(100, 65);
+        ctx.arc(95, 65, 5, 0, Math.PI * 2, true);
+        ctx.moveTo(60, 65);
+        ctx.arc(55, 65, 5, 0, Math.PI * 2, true);
+
+        ctx.stroke();
+    },
+
+    function drawBezierCurves() {
+        let canvas = document.querySelector('#bezier-curves');
+        let ctx = canvas.getContext('2d');
+
+        ctx.beginPath();
+        ctx.moveTo(75, 25);
+        ctx.quadraticCurveTo(25, 25, 25, 62.5);
+        ctx.quadraticCurveTo(25, 100, 50, 100);
+        ctx.quadraticCurveTo(50, 120, 30, 125);
+        ctx.quadraticCurveTo(60, 120, 65, 100);
+        ctx.quadraticCurveTo(125, 100, 125, 62.5);
+        ctx.quadraticCurveTo(125, 25, 75, 25);
+        
+        ctx.stroke();
+    },
 ]
 
 functions.forEach(func => {

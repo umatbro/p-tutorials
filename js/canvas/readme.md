@@ -18,3 +18,8 @@ Functions to use paths:
 * ``moveTo()`` Moves the starting point of a new sub-path to the (x, y) coordinates.
 * ``lineTo()`` Connects the last point in the subpath to the x, y coordinates with a straight line.
 * [other](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Paths) (like ``quadraticCurveTo`` or ``arc`` and ``ellipse``)
+
+
+# Bezier curves
+
+[Tutorial](http://www.algorytm.org/podstawy-grafiki/krzywa-beziera.html) with formulas.
