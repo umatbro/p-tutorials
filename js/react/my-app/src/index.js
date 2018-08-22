@@ -50,6 +50,7 @@ class Game extends React.Component {
         this.state = {
             history: [{
                 squares: Array(9).fill(null),
+                lastPositionSelected: Array(2).fill(null),
             }],
             xIsNext: true,
             stepNumber: 0,
@@ -64,9 +65,14 @@ class Game extends React.Component {
             return;
         }
 
+        let coords = posToCoords(i);
+
         squares[i] = this.state.xIsNext ? 'X' : 'O';
         this.setState({
-            history: history.concat([{squares: squares}]),
+            history: history.concat([{
+                squares: squares, 
+                lastPositionSelected: coords,
+            }]),
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext,
         });
@@ -89,9 +95,14 @@ class Game extends React.Component {
             const desc = move ?
                 'Go to move #' + move :
                 'Go to game start';
+            
+            let [col, row] = step.lastPositionSelected;
+            const posMsg = col && row ? `(${col}, ${row})` : '';
+
             return (
                 <li key={move}>
                     <button onClick={() => this.jumpTo(move)}>{desc}</button>
+                    {posMsg}
                 </li>
             );
         });
@@ -147,4 +158,12 @@ function calculateWinner(squares) {
         }
     }
     return null;
+}
+
+/**
+ * @param {Number} pos position in the array to be translated
+ * @returns 2-element array with col, row
+ */
+function posToCoords(pos) {
+    return [(pos) % 3 + 1, Math.floor(pos / 3) + 1];
 }
