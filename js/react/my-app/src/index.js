@@ -4,8 +4,9 @@ import './index.css';
 
 
 function Square(props) {
+    const cls = `square${props.isWinning ? ' winning' : ''}`;
     return (
-        <button className="square" onClick={props.onClick}>
+        <button className={cls} onClick={props.onClick}>
             {props.value}
         </button>
     );
@@ -16,6 +17,7 @@ class Board extends React.Component {
         return (
             <Square
                 value={this.props.squares[i]}
+                isWinning={this.props.winningSquares.includes(i)}
                 onClick={() => this.props.onClick(i)}
             />
         );
@@ -92,6 +94,7 @@ class Game extends React.Component {
         const history = this.state.history;
         const current = history[this.state.stepNumber];
         const winner = calculateWinner(current.squares);
+        const winningSquares = getWinningSquares(current.squares);
 
         const moves = history.map((step, move) => {
             const desc = move ?
@@ -121,6 +124,8 @@ class Game extends React.Component {
 
         if (winner) {
             status = `Winner: ${winner}`;
+        } else if (areAllSquaresFilled(current.squares)) {
+            status = 'Draw!'
         } else {
             status = `Next player: ${this.state.xIsNext ? 'X' : 'O'}`
         }
@@ -130,6 +135,7 @@ class Game extends React.Component {
                 <div className="game-board">
                     <Board
                         squares={current.squares}
+                        winningSquares={winningSquares}
                         onClick={(i) => this.handleClick(i)}
                     />
                 </div>
@@ -168,6 +174,33 @@ function calculateWinner(squares) {
         }
     }
     return null;
+}
+
+function getWinningSquares(squares) {
+    const lines = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+    ];
+
+    for (let [a, b, c] of lines) {
+        if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+            return [a, b, c];
+        }
+    }
+    return [];
+}
+
+function areAllSquaresFilled(squares) {
+    for (let square of squares) {
+        if (!square) return false;
+    }
+    return true;
 }
 
 /**
