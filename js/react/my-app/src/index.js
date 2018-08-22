@@ -54,6 +54,7 @@ class Game extends React.Component {
             }],
             xIsNext: true,
             stepNumber: 0,
+            currentlyViewedMove: 0,
         };
     }
 
@@ -75,15 +76,16 @@ class Game extends React.Component {
             }]),
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext,
+            currentlyViewedMove: this.state.currentlyViewedMove + 1,
         });
     }
 
-    jumpTo(step) {
+    jumpTo(moveNr) {
         this.setState({
-            stepNumber: step,
-            xIsNext: (step % 2) === 0,
-
-        })
+            stepNumber: moveNr,
+            xIsNext: (moveNr % 2) === 0,
+            currentlyViewedMove: moveNr,
+        });
     }
 
     render() {
@@ -98,13 +100,21 @@ class Game extends React.Component {
             
             let [col, row] = step.lastPositionSelected;
             const posMsg = col && row ? `(${col}, ${row})` : '';
-
-            return (
+            const liContent = (
                 <li key={move}>
                     <button onClick={() => this.jumpTo(move)}>{desc}</button>
                     {posMsg}
                 </li>
             );
+
+            return move === this.state.currentlyViewedMove ? (
+                <li key={move}>
+                    <b>
+                    <button onClick={() => this.jumpTo(move)}>{desc}</button>
+                    {posMsg}
+                    </b>
+                </li>
+            ) : liContent;
         });
 
         let status;
