@@ -16,3 +16,5 @@ Argument in ``-t`` flag is a custom image name, the last argument is a ``Dockerf
 ## Launching new image
 
 ``docker run [OPTIONS] <image_name>``
+
+* ``-e`` flag sets container environmental variables, eg. ``docker run -e NODE_ENV=production -p 3000:3000 my-nodejs-app``
