@@ -55,3 +55,8 @@ Run a redis server with a friendly name of redis-server which we'll connect to i
 
 ``docker run -d --name redis-server redis``
 
+
+
+# Other tutorials
+
+* https://training.play-with-docker.com/beginner-linux/
