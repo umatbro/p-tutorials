@@ -60,3 +60,4 @@ Run a redis server with a friendly name of redis-server which we'll connect to i
 # Other tutorials
 
 * https://training.play-with-docker.com/beginner-linux/
+* example voting app: https://github.com/dockersamples/example-voting-app
