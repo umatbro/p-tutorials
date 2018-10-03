@@ -54,3 +54,8 @@ dpkg-reconfigure tzdata
 ```
 
 Then select your timezone from one of available options.
+
+# Arch linux
+
+* [Installing teamviewer](https://linuxhint.com/install_teamviewer_arch_linux/)
+
