@@ -59,3 +59,38 @@ Then select your timezone from one of available options.
 
 * [Installing teamviewer](https://linuxhint.com/install_teamviewer_arch_linux/)
 
+## Installing from the AUR
+
+Packages from [AUR](https://aur.archlinux.org/) can be installed *by hand* (manually).
+
+To do that follow the steps given below:
+
+* Download the tarball from the AUR preferably to ``~/Downloads`` (just click on the tarball from your browser and you should get it)
+
+```commandline
+# Make a sub-directory in downloads called builds:
+mkdir ~/Downloads/builds
+# Move the tarball to builds (foo is the name of the package you've downloaded): 
+mv foo.tar.gz builds
+# Change directory to the builds folder
+cd builds
+# Untar the tarball  
+tar -xvf foo.tar.gz
+# Move into the new sub-directory 
+cd <foo>
+```
+
+To make/compile the package, run:
+
+```
+makepkg -s
+```
+
+This will build the package and pull in necessary dependencies as files. You're interested in the one that ends with .pkg.tar.xz (usually). 
+The final event is running $sudo pacman -U on that file:
+
+```
+sudo pacman -U foo.pkg.xz
+
+```
+And you've done it...the safest way to install from the AUR. 
