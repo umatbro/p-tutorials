@@ -61,6 +61,12 @@ Then select your timezone from one of available options.
 
 ## Installing from the AUR
 
+**Instal the build essentials**. These are needed to compile packages on Arch Linux ARM.
+
+```commandline
+sudo pacman -S kernel26-headers file base-devel abs
+```
+
 Packages from [AUR](https://aur.archlinux.org/) can be installed *by hand* (manually).
 
 To do that follow the steps given below:
