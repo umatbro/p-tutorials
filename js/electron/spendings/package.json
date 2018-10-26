@@ -1,0 +1,15 @@
+{
+  "name": "spendings",
+  "version": "1.0.0",
+  "description": "See what you spend your money on",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "author": "umat",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^3.0.6"
+  }
+}
