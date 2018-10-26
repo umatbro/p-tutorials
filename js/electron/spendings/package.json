@@ -4,13 +4,16 @@
   "description": "See what you spend your money on",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/mocha/bin/mocha test/**/*.js",
     "start": "electron ."
   },
   "author": "umat",
   "license": "MIT",
   "dependencies": {
-    "electron": "^3.0.6"
+    "electron": "^3.0.6",
+    "underscore": "^1.9.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  }
 }
