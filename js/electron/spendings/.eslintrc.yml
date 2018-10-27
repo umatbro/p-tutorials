@@ -1,0 +1,6 @@
+extends: airbnb-base
+env:
+  mocha: true
+rules:
+  # for "private variables" (like this.__myvar)
+  no-underscore-dangle: "off"
