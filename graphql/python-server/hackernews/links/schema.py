@@ -1,6 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
-from links.models import Link
+from links.models import Link, Vote
+from users.schema import UserType
 
 
 class LinkType(DjangoObjectType):
@@ -8,31 +9,73 @@ class LinkType(DjangoObjectType):
     model = Link
 
 
+class VoteType(DjangoObjectType):
+  class Meta:
+    model = Vote
+
+
 class Query(graphene.ObjectType):
   links = graphene.List(LinkType)
+  votes = graphene.List(VoteType)
 
   def resolve_links(self, info, **kwargs):
     return Link.objects.all()
+
+  def resolve_votes(self, info, **kwargs):
+    return Vote.objects.all()
 
 
 class CreateLink(graphene.Mutation):
   id = graphene.Int()
   url = graphene.String()
   description = graphene.String()
+  posted_by = graphene.Field(UserType)
 
   class Arguments:
     url = graphene.String()
     description = graphene.String()
 
   def mutate(self, info, url, description):
-    link = Link(url=url, description=description)
+    user = info.context.user or None
+
+    link = Link(
+      url=url,
+      description=description,
+      posted_by=user,
+    )
     link.save()
 
     return CreateLink(
       id=link.id,
       url=link.url,
       description=link.description,
+      posted_by=link.posted_by,
+    )
+
+
+class CreateVote(graphene.Mutation):
+  link = graphene.Field(LinkType)
+  user = graphene.Field(UserType)
+
+  class Arguments:
+    link_id = graphene.Int()
+  
+  def mutate(self, info, link_id):
+    user = info.context.user
+    if user.is_anonymous:
+      raise Exception('You must be logged in to vote.')
+
+    link = Link.objects.filter(id=link_id).first()
+    if not link:
+      raise Exception('Invalid link id')
+
+    Vote.objects.create(link=link, user=user)
+
+    return CreateVote(
+      user=user,
+      link=link,
     )
 
 class Mutation(graphene.ObjectType):
   create_link = CreateLink.Field()
+  create_vote = CreateVote.Field()
