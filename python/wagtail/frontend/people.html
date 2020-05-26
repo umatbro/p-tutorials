@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Vue app</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>Workshop people</h1>
+        <ul>
+            <li v-for='person in people'>{{ person.name }}</li>
+        </ul>
+    </div>
+    <script>
+        const people = [{
+        "name": "Jerrome Stanman"
+        }, {
+        "name": "Bernadene Feldmark"
+        }, {
+        "name": "Deidre Roizin"
+        }, {
+        "name": "Killy Exelby"
+        }, {
+        "name": "Debora Mechell"
+        }, {
+        "name": "Arlyn Aaronson"
+        }, {
+        "name": "Luis Bouchier"
+        }, {
+        "name": "Zacharias Van den Velden"
+        }, {
+        "name": "Noam Ferrandez"
+        }, {
+        "name": "Lenee Hazlehurst"
+        }, {
+        "name": "Lanni Tubbs"
+        }, {
+        "name": "Boone Riddle"
+        }, {
+        "name": "Weston Birchenhead"
+        }, {
+        "name": "Meryl Ethridge"
+        }, {
+        "name": "Claretta Di Francecshi"
+        }, {
+        "name": "Barron Donson"
+        }, {
+        "name": "Mildrid Dwire"
+        }, {
+        "name": "Lisbeth Praundl"
+        }, {
+        "name": "Rriocard Affron"
+        }, {
+        "name": "Harriett Bewfield"
+        }]
+        const app = new Vue({
+            el: '#app',
+            filters: {
+                upper: function(value) {
+                    return value.toUpperCase();
+                }
+            },
+            data () {
+                return {
+                    people: people,
+                }
+            },
+            async mounted () {
+                const response = await axios.get("https://api.myjson.com/bins/uvhb9");
+                this.people = response.data;
+            }
+        })
+    </script>
+    
+</body>
+</html>
