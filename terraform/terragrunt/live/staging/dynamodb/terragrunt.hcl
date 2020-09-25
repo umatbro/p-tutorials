@@ -1,0 +1,7 @@
+terraform {
+    source = "../../../modules/dynamodb"
+}
+
+include {
+    path = find_in_parent_folders()
+}
