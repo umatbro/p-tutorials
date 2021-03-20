@@ -24,3 +24,7 @@ function draw() {
 
     particles = particles.filter((particle) => !particle.finished());
 }
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+}
