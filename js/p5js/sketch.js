@@ -1,11 +1,14 @@
 let particles = [];
+const bgColor = RANDOM_BACKGROUNDS[Math.floor(Math.random() * RANDOM_BACKGROUNDS.length)]
 function setup() {
     createCanvas(windowWidth, windowHeight);
 
 }
 
 function draw() {
-    background(0);
+    // pick a random background from RANDOM_BACKGROUNDS
+    background(...bgColor);
+    
     let spawnIntensity = mouseIsPressed ? 6 : (random() > 0.9);
     for (let i = 0; i < spawnIntensity; i++) {
         let particle = new Particle(mouseX, mouseY);

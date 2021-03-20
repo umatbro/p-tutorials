@@ -7,6 +7,12 @@ const BLUE_CANYOLA = [55, 119, 255]
 const FRENCH_LIME = [150, 245, 80]
 const BYZANTIUM = [122, 48, 108]
 
+const DID_BURGUNDY = [71, 51, 53]
+const EBONY = [81, 90, 71]
+const BLACK_COFFEE = [58, 51, 53]
+const DARK_SLATE_GRAY = [59, 82, 73]
+const INDIGO_DYE = [3, 63, 99]
+
 // cool rainbow
 const SIZZLING_RED = [255, 89, 94]
 const SUNGLOW  = [255, 202, 58];
@@ -14,12 +20,21 @@ const YELLOW_GREEN = [138, 201, 38];
 const GREEN_BLUE_CRAYOLA = [25, 130, 196];
 const ROYAL_PURPLE = [106, 76, 147];
 
+
 const RANDOM_COLORS = [
     SIZZLING_RED,
     SUNGLOW,
     YELLOW_GREEN,
     GREEN_BLUE_CRAYOLA,
     ROYAL_PURPLE,
+]
+
+const RANDOM_BACKGROUNDS = [
+    DID_BURGUNDY,
+    EBONY,
+    BLACK_COFFEE,
+    DARK_SLATE_GRAY,
+    INDIGO_DYE,
 ]
 
 class Particle {
