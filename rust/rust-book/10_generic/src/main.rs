@@ -1,6 +1,6 @@
 mod aggregator;
-use aggregator::{Summary, Tweet, NewsArticle};
-
+mod lifetimes;
+use aggregator::{NewsArticle, Summary, Tweet};
 
 fn main() {
     let number_list = vec![34, 50, 25, 100, 65];
@@ -13,10 +13,12 @@ fn main() {
     let result = largest(&char_list);
     println!("The largest char is {}", result);
 
-    let point = Point{x: 1, y: 2};
+    let point = Point { x: 1, y: 2 };
     println!("{:?}", point);
     println!("{}", point.x());
     traits();
+
+    lifetimes::lifetimes();
 }
 
 fn largest<T: std::cmp::PartialOrd>(list: &[T]) -> &T {
