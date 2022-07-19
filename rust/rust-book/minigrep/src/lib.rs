@@ -1,8 +1,9 @@
+use std::env;
 use std::error::Error;
 use std::fs;
+use std::ops::RangeBounds;
 use std::path::Path;
 use std::process;
-use std::env;
 
 #[derive(Debug)]
 pub struct Config {
@@ -12,16 +13,25 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(args: &[String]) -> Result<Self, &'static str> {
-        if args.len() < 3 {
-            return Err("Not enough arguments");
-        }
-        let query = args[1].clone();
-        let filename = args[2].clone();
+    pub fn new(mut args: impl Iterator<Item = String>) -> Result<Self, &'static str> {
+        args.next();
+
+        let query = match args.next() {
+            Some(q) => q,
+            None => return Err("Didn't get a query string"),
+        };
+
+        let filename = match args.next() {
+            Some(f) => f,
+            None => return Err("Didn't get a file name"),
+        };
 
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
-
-        Ok(Config { query, filename, case_sensitive })
+        Ok(Self {
+            query,
+            filename,
+            case_sensitive,
+        })
     }
 }
 
@@ -48,16 +58,11 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-
 fn search<'a>(query: &str, content: &'a str) -> Vec<&'a str> {
-    let mut result = Vec::new();
-
-    for line in content.lines() {
-        if line.contains(query) {
-            result.push(line);
-        }
-    }
-    result
+    content
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
 
 fn serach_case_insensitive<'a>(query: &str, content: &'a str) -> Vec<&'a str> {
@@ -76,7 +81,7 @@ fn serach_case_insensitive<'a>(query: &str, content: &'a str) -> Vec<&'a str> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_case_sensitive() {
         let query = "duct";
