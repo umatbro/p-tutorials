@@ -1,6 +1,7 @@
 use crate::List::{Cons, Nil};
 use std::{ops::Deref, char::MAX};
 use std::iter::Iterator;
+use std::fmt::Debug;
 
 fn main() {
     let b = Box::new(5);
@@ -63,53 +64,50 @@ impl <T> Deref for MyBox<T> {
 }
 
 #[derive(Debug)]
-struct Node {
-    value: i32,
-    next: Option<Box<Node>>,
+struct Node <T> {
+    value: T,
+    next: Option<Box<Node<T>>>,
 }
 
-impl Node {
-    fn from(value: i32) -> Self {
+impl<T> Node<T> {
+    fn from(value: T) -> Self {
         Self {value, next: None}
     }
 
-    fn set_next(&mut self, node: Node) {
+    fn set_next(&mut self, node: Node<T>) {
         let res = Box::from(node);
         self.next = Some(res);
     }
 }
 
 #[derive(Debug)]
-struct LinkedList<'a> {
-    root: Option<Box<Node>>,
-    _curr_iter: Option<&'a Box<Node>>,
+struct LinkedList<'a, T> {
+    root: Option<Box<Node<T>>>,
+    _curr_iter: Option<&'a Box<Node<T>>>,
 }
 
-impl <'a> LinkedList <'a> {
+impl <'a, T> LinkedList <'a, T> where T: Debug {
     fn new() -> Self {
         Self {root: None, _curr_iter: None}
     }
 
-    fn insert(&mut self, value: i32) {
+    fn insert(&mut self, value: T) {
         let new_node= Node::from(value);
         if self.root.is_none() {
             self.root = Some(Box::from(new_node));
-            println!("Root has been set to {:?}", self.root);
             return;
         }
         // let mut root = self.root.as_mut().unwrap();
         let mut current = self.root.as_mut().unwrap();
-        println!("first current is {:?}", current);
         while current.next.is_some() {
             current = current.next.as_mut().unwrap();
-            println!("New current is {:?}", current);
         }
         current.next = Some(Box::from(new_node));
     }
 }
 
-impl<'a> Iterator for LinkedList<'a> {
-    type Item = i32;
+impl<'a, T> Iterator for LinkedList<'a, T> {
+    type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.root.is_none() {
@@ -135,7 +133,12 @@ fn use_list() {
     list.insert(1338);
     list.insert(42);
     println!("Linkded list: {:?}", list);
-    // list.insert(6);
+
+    let mut list_of_strings = LinkedList::new();
+    list_of_strings.insert(String::from("abc"));
+    list_of_strings.insert(String::from("Hej"));
+    println!("Linked string list: {:?}", list_of_strings);
+
     for x in list {
         println!("List item: {}", x);
     }
