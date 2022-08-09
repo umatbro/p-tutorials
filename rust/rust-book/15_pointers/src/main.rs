@@ -1,7 +1,9 @@
 use crate::List::{Cons, Nil};
+use crate::RcList::{RcCons, RcNil};
 use std::{ops::Deref, char::MAX};
 use std::iter::Iterator;
 use std::fmt::Debug;
+use std::rc::Rc;
 
 fn main() {
     let b = Box::new(5);
@@ -21,20 +23,41 @@ fn main() {
     assert_eq!(5, v);
     assert_eq!(5, *w);
 
-    let c1 = CustomSmartpointer { data: String::from("asdf")};
-    let c2 = CustomSmartpointer { data: String::from("qwerty")};
-
+    {
+        let c1 = CustomSmartpointer { data: String::from("asdf")};
+        let c2 = CustomSmartpointer { data: String::from("qwerty")};
+    }
+    
     use_list();
     let z = 6;
     let my_box = MyBox(z);
     assert_eq!(6, z);
     assert_eq!(6, *my_box);
+
+    let a = Rc::new(RcCons(5, Rc::new(RcCons(10, Rc::new(RcNil)))));
+    println!("(a) Rc strong count: {}", Rc::strong_count(&a));
+    let b =  RcCons(3, Rc::clone(&a));
+    println!("(b) Rc strong count: {}", Rc::strong_count(&a));
+    let c = RcCons(4, Rc::clone(&a));
+    println!("(c) Rc strong count: {}", Rc::strong_count(&a));
+
+    println!("a: {:?}", a);
+    println!("b: {:?}", b);
+    println!("c: {:?}", c);
+
+    strong_count();
 }
 
 #[derive(Debug)]
 enum List {
     Cons(i32, Box<List>),
     Nil,
+}
+
+#[derive(Debug)]
+enum RcList {
+    RcCons(i32, Rc<RcList>),
+    RcNil,
 }
 
 struct CustomSmartpointer {
@@ -149,4 +172,16 @@ fn insert_root() {
     let mut ll = LinkedList::new();
     ll.insert(1);
     assert_eq!(ll.root.unwrap().value, 1);
+}
+
+fn strong_count() {
+    let a = Rc::new(RcCons(5, Rc::new(RcCons(10, Rc::new(RcNil)))));
+    println!("(a) Rc strong count: {}", Rc::strong_count(&a));
+    let b =  RcCons(3, Rc::clone(&a));
+    println!("(b) Rc strong count: {}", Rc::strong_count(&a));
+    {
+        let c = RcCons(4, Rc::clone(&a));
+        println!("(c) Rc strong count: {}", Rc::strong_count(&a));
+    }
+    println!("(end) Rc strong count: {}", Rc::strong_count(&a));
 }
