@@ -72,13 +72,13 @@ impl Drop for CustomSmartpointer {
 
 struct MyBox<T>(T);
 
-impl <T> MyBox<T> {
+impl<T> MyBox<T> {
     fn new(x: T) -> Self {
         Self(x)
     }
 }
 
-impl <T> Deref for MyBox<T> {
+impl<T> Deref for MyBox<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -87,14 +87,14 @@ impl <T> Deref for MyBox<T> {
 }
 
 #[derive(Debug)]
-struct Node <T> {
+struct Node<T> {
     value: T,
     next: Option<Box<Node<T>>>,
 }
 
 impl<T> Node<T> {
     fn from(value: T) -> Self {
-        Self {value, next: None}
+        Self { value, next: None }
     }
 
     fn set_next(&mut self, node: Node<T>) {
@@ -109,18 +109,23 @@ struct LinkedList<'a, T> {
     _curr_iter: Option<&'a Box<Node<T>>>,
 }
 
-impl <'a, T> LinkedList <'a, T> where T: Debug {
+impl<'a, T> LinkedList<'a, T>
+where
+    T: Debug,
+{
     fn new() -> Self {
-        Self {root: None, _curr_iter: None}
+        Self {
+            root: None,
+            _curr_iter: None,
+        }
     }
 
     fn insert(&mut self, value: T) {
-        let new_node= Node::from(value);
+        let new_node = Node::from(value);
         if self.root.is_none() {
             self.root = Some(Box::from(new_node));
             return;
         }
-        // let mut root = self.root.as_mut().unwrap();
         let mut current = self.root.as_mut().unwrap();
         while current.next.is_some() {
             current = current.next.as_mut().unwrap();
@@ -136,12 +141,14 @@ impl<'a, T> Iterator for LinkedList<'a, T> {
         if self.root.is_none() {
             return None;
         }
-        None
-        // self._curr_iter = Some(self.root.as_deref().unwrap());
-        // Some(self.root.as_ref().expect("Root must be set").value)
+
+        let current_root = self.root.take().unwrap();
+        let to_return = current_root.value;
+        self.root = current_root.next;
+
+        Some(to_return)
     }
 }
-
 
 fn use_list() {
     let mut list = LinkedList::new();
@@ -162,9 +169,16 @@ fn use_list() {
     list_of_strings.insert(String::from("Hej"));
     println!("Linked string list: {:?}", list_of_strings);
 
-    for x in list {
-        println!("List item: {}", x);
-    }
+    let mut counter: u8 = 0;
+    for x in list.map(|x| {
+        counter += 1;
+        format!("List item[{}] = {:?}", counter, x)
+    }) {
+        println!("{}", x);
+    };
+    // for (x, y) in list.zip(list_of_strings) {
+    //     println!("{}, {}", x, y);
+    // }
 }
 
 #[test]
