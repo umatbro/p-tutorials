@@ -4,6 +4,7 @@ use std::{ops::Deref, char::MAX};
 use std::iter::Iterator;
 use std::fmt::Debug;
 use std::rc::Rc;
+mod messenger;
 
 fn main() {
     let b = Box::new(5);
@@ -46,6 +47,8 @@ fn main() {
     println!("c: {:?}", c);
 
     strong_count();
+
+    refcell();
 }
 
 #[derive(Debug)]
@@ -198,4 +201,9 @@ fn strong_count() {
         println!("(c) Rc strong count: {}", Rc::strong_count(&a));
     }
     println!("(end) Rc strong count: {}", Rc::strong_count(&a));
+}
+
+fn refcell() {
+    let x = 5;
+    // let y = &mut x;
 }
