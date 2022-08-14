@@ -6,6 +6,7 @@ use std::fmt::Debug;
 use std::rc::Rc;
 mod messenger;
 mod cons_rc_refcell;
+mod mem_leak;
 
 fn main() {
     let b = Box::new(5);
@@ -51,6 +52,7 @@ fn main() {
 
     refcell();
     cons_rc_refcell::main();
+    mem_leak::main();
 }
 
 #[derive(Debug)]
