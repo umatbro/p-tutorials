@@ -5,6 +5,7 @@ use std::iter::Iterator;
 use std::fmt::Debug;
 use std::rc::Rc;
 mod messenger;
+mod cons_rc_refcell;
 
 fn main() {
     let b = Box::new(5);
@@ -49,6 +50,7 @@ fn main() {
     strong_count();
 
     refcell();
+    cons_rc_refcell::main();
 }
 
 #[derive(Debug)]
