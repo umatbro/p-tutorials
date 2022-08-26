@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::sync::{Mutex, Arc};
 use std::thread;
 use std::time::Duration;
 use std::sync::mpsc::{self, Sender, Receiver};
@@ -26,6 +27,7 @@ fn main() {
 
     messaging();
     channels();
+    shared_state();
 }
 
 fn messaging() {
@@ -79,4 +81,24 @@ fn channels() {
     for received in rx {
         println!("Got: {}", received);
     }
+}
+
+fn shared_state() {
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+
+    for i in 0..10 {
+        let arc = Arc::clone(&counter);
+        let handle = thread::spawn(move || {
+            let mut num = arc.lock().unwrap();
+            *num += 1;
+            println!("Thread {} is setting value to {}", i, num);
+        });
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+    println!("Result: {}", *counter.lock().unwrap());
 }
