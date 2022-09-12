@@ -1,4 +1,5 @@
 use core::fmt::Debug;
+mod behavior_as_types;
 
 fn main() {
     let mut post = Post::new();
@@ -11,6 +12,8 @@ fn main() {
     println!("Content at approve: {}", post.content());
     post.request_review();
     println!("Content after attempt to move back to request_review: {}", post.content());
+
+    behavior_as_types::main();
 }
 
 pub struct Post {
