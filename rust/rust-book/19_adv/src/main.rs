@@ -2,6 +2,7 @@ use std::ops::Add;
 use std::fmt;
 mod methods_with_the_same_name;
 mod outline_print;
+mod functions;
 use outline_print::OutlinePrint;
 use std::ops::Deref;
 
@@ -22,6 +23,12 @@ fn main() {
     for i in w.iter() {
         println!("{}", i);
     }
+
+    let answer = functions::do_twice(functions::add_one, 5);
+    println!("Did add twice and the result is {}", answer);
+    functions::closures_and_fns();
+    functions::enum_as_fn();
+    functions::returns_closure();
 }
 
 #[derive(Debug, PartialEq)]
