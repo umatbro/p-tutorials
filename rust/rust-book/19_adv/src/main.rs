@@ -3,6 +3,7 @@ use std::fmt;
 mod methods_with_the_same_name;
 mod outline_print;
 mod functions;
+mod macros;
 use outline_print::OutlinePrint;
 use std::ops::Deref;
 
@@ -29,6 +30,7 @@ fn main() {
     functions::closures_and_fns();
     functions::enum_as_fn();
     functions::returns_closure();
+    macros::example();
 }
 
 #[derive(Debug, PartialEq)]
