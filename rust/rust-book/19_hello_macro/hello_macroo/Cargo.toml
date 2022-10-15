@@ -1,10 +1,8 @@
 [package]
-name = "hello_macro"
+name = "hello_macroo"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hello_macro_derive = { path = "./hello_macro_derive" }
-hello_macroo = { path = "./hello_macroo" }
