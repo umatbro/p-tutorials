@@ -29,8 +29,10 @@ fn main() {
     println!("Did add twice and the result is {}", answer);
     functions::closures_and_fns();
     functions::enum_as_fn();
-    functions::returns_closure();
+    let _ = functions::returns_closure();
     macros::example();
+    let room = Meters::<f32>(1.5);
+    println!("My room is {:?} meters wide.", room);
 }
 
 #[derive(Debug, PartialEq)]
@@ -88,3 +90,6 @@ impl Deref for Wrapper {
         &self.0
     }
 }
+
+#[derive(Debug)]
+struct Meters<T=i32>(T);
