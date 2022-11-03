@@ -1,4 +1,7 @@
-use std::{sync::{mpsc, Arc, Mutex}, thread};
+use std::{
+    sync::{mpsc, Arc, Mutex},
+    thread,
+};
 
 struct Worker {
     id: usize,
@@ -8,7 +11,11 @@ struct Worker {
 impl Worker {
     fn new(id: usize, reciver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Self {
         let thread = thread::spawn(move || loop {
-            let job = reciver.lock().expect("Error obtaining lock").recv().unwrap();
+            let job = reciver
+                .lock()
+                .expect("Error obtaining lock")
+                .recv()
+                .unwrap();
             println!("Worker {id} got a job! Executing...");
             job();
             println!("Worker {id} execution finished.");
@@ -22,7 +29,7 @@ type Job = Box<dyn FnOnce() + Send + 'static>;
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: mpsc::Sender<Job>
+    sender: mpsc::Sender<Job>,
 }
 pub struct PoolCreationError(pub &'static str);
 
@@ -58,9 +65,19 @@ impl ThreadPool {
     }
 
     pub fn execute<F>(&self, f: F)
-    where F: FnOnce() + Send + 'static
+    where
+        F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
         self.sender.send(job).unwrap();
+    }
+}
+
+impl Drop for ThreadPool {
+    fn drop(&mut self) {
+        for worker in &mut self.workers {
+            println!("Shutting down worker {}", worker.id);
+            worker.thread.join().unwrap();
+        }
     }
 }

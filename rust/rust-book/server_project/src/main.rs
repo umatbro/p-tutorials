@@ -1,12 +1,11 @@
+use server_project::ThreadPool;
 use std::{
-    process,
     fs,
     io::{prelude::*, BufReader},
     net::{TcpListener, TcpStream},
-    thread,
+    process, thread,
     time::Duration,
 };
-use server_project::ThreadPool;
 
 const CRLF: &str = "\r\n";
 
@@ -17,7 +16,7 @@ fn main() {
         Err(e) => {
             eprintln!("{}", e.0);
             process::exit(1);
-        },
+        }
     };
 
     for stream in listener.incoming() {
