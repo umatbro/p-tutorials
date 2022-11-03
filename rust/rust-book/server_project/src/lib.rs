@@ -5,23 +5,26 @@ use std::{
 
 struct Worker {
     id: usize,
-    thread: thread::JoinHandle<()>,
+    thread: Option<thread::JoinHandle<()>>,
 }
 
 impl Worker {
     fn new(id: usize, reciver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Self {
         let thread = thread::spawn(move || loop {
-            let job = reciver
-                .lock()
-                .expect("Error obtaining lock")
-                .recv()
-                .unwrap();
-            println!("Worker {id} got a job! Executing...");
-            job();
-            println!("Worker {id} execution finished.");
+            match reciver.lock().expect("Error obtaining lock").recv() {
+                Ok(job) => {
+                    println!("Worker {id} got a job! Executing...");
+                    job();
+                    println!("Worker {id} execution finished.");
+                },
+                Err(_) => {
+                    println!("Worker id {id} disconnected; shutting down.");
+                    break;
+                }
+            }
         });
 
-        Self { id, thread }
+        Self { id, thread: Some(thread) }
     }
 }
 
@@ -29,7 +32,7 @@ type Job = Box<dyn FnOnce() + Send + 'static>;
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: mpsc::Sender<Job>,
+    sender: Option<mpsc::Sender<Job>>,
 }
 pub struct PoolCreationError(pub &'static str);
 
@@ -53,7 +56,7 @@ impl ThreadPool {
             // create some threads and store them in the vector
             workers.push(Worker::new(i, Arc::clone(&receiver)))
         }
-        Self { workers, sender }
+        Self { workers, sender: Some(sender) }
     }
 
     pub fn build(size: usize) -> Result<Self, PoolCreationError> {
@@ -69,15 +72,19 @@ impl ThreadPool {
         F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
-        self.sender.send(job).unwrap();
+        self.sender.as_ref().unwrap().send(job).unwrap();
     }
 }
 
 impl Drop for ThreadPool {
     fn drop(&mut self) {
         for worker in &mut self.workers {
+            drop(self.sender.take());
+
             println!("Shutting down worker {}", worker.id);
-            worker.thread.join().unwrap();
+            if let Some(thread) = worker.thread.take() {
+                thread.join().unwrap();
+            }
         }
     }
 }
