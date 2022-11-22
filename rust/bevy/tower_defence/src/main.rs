@@ -1,75 +1,48 @@
 use bevy::prelude::*;
-use std::ops::Add;
+
+pub const HEIGHT: f32 = 720.0;
+pub const WIDTH: f32 = 1280.0;
 
 fn main() {
     App::new()
-        .add_plugins(MinimalPlugins)
-        .add_startup_system(say_hello_system)
-        .insert_resource(XpGain(10))
-        .add_startup_system(spawn_player)
-        .add_system(action_system)
+        .insert_resource(ClearColor(Color::rgb(0.2, 0.2, 0.2)))
+        .add_startup_system(spawn_basic_scene)
+        .add_startup_system(spawn_camera)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            window: WindowDescriptor {
+                width: WIDTH,
+                height: HEIGHT,
+                title: "Bevy Tower Defense".to_string(),
+                resizable: false,
+                ..Default::default()
+            },
+            ..default()
+        }))
         .run();
 }
 
-fn say_hello_system(
-    xp_gain: Res<XpGain>
+fn spawn_basic_scene(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    println!("Hello bevy! You will gain {} xp for each action!", xp_gain.0);
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
+        material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+        ..default()
+    });
+
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        material: materials.add(Color::rgb(0.67, 0.84, 0.92).into()),
+        transform: Transform::from_xyz(0.0, 0.5, 0.0),
+        ..default()
+    });
 }
 
-fn spawn_player(mut commands: Commands) {
-    println!("Spawning player!");
-    let some_player_entity = commands.spawn().insert(Player).id();
-    println!("Spawned player {:?}", some_player_entity);
-    let player_bundle = commands.spawn_bundle(PlayerBundle::default()).id();
-    println!("Spawned player {:?}", player_bundle);
-}
-
-fn action_system(
-    mut query: Query<(&mut Xp, &Player)>,
-    xp_gain: Res<XpGain>,
-) {
-    for (xp, player) in query.iter_mut() {
-        let mut xp: Mut<Xp> = xp;
-        let player: &Player = player;
-        // let new_xp_val = xp.as_ref() + xp_gain.as_ref();
-        *xp = xp.as_ref() + xp_gain.as_ref();
-        println!("Player {:?} has new xp: {}", player, xp.0);
-    }
-}
-
-#[derive(Component)]
-struct Health(i32);
-
-#[derive(Component)]
-struct Xp(i32);
-
-impl Add<&XpGain> for &Xp {
-    type Output = Xp;
-
-    fn add(self, rhs: &XpGain) -> Self::Output {
-        Xp(self.0 + rhs.0)
-    }
-}
-
-#[derive(Component, Debug)]
-struct Player;
-
-#[derive(Bundle)]
-struct PlayerBundle {
-    health: Health,
-    xp: Xp,
-    _p: Player,
-}
-
-struct XpGain(i32);
-
-impl Default for PlayerBundle {
-    fn default() -> Self {
-        Self {
-            health: Health(100),
-            xp: Xp(0),
-            _p: Player,
-        }
-    }
+fn spawn_camera(mut commands: Commands) {
+    commands.spawn(Camera3dBundle {
+        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        ..default()
+    });
 }
