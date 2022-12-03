@@ -8,7 +8,7 @@ fn main() {
     let file = File::open(path).unwrap();
     let lines = BufReader::new(file).lines();
     
-    Part 1
+    // Part 1
     let mut result = 0;
     for line in lines {
         let text = line.unwrap();
