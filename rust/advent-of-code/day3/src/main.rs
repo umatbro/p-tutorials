@@ -1,7 +1,9 @@
+use std::collections::btree_set::Intersection;
 use std::collections::{HashSet, HashMap};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
+use iterchunks::IterChunks;
 
 fn main() {
     let path = Path::new("input");
@@ -9,19 +11,22 @@ fn main() {
     let lines = BufReader::new(file).lines();
     
     // Part 1
-    let mut result = 0;
-    for line in lines {
-        let text = line.unwrap();
-        println!("{}", text);
-        let (left, right) = split_str(&text);
-        let common = get_common(left, right);
-        result += points_value(&common);
-    }
-    println!("Result is {}", result);
     // let mut result = 0;
-    // for [a,b,c] in lines.array_chunks() {
-        
+    // for line in lines {
+    //     let text = line.unwrap();
+    //     println!("{}", text);
+    //     let (left, right) = split_str(&text);
+    //     let common = get_common(left, right);
+    //     result += points_value(&common);
     // }
+    // println!("Result is {}", result);
+    let mut result = 0;
+    for [a,b,c] in lines.into_iter().map(|el| el.unwrap()).array_chunks() {
+       let common_in_3 = get_common_in_3(&a, &b, &c);
+       let value = points_value(&common_in_3);
+       result += value;
+    }
+    println!("Part 2 result is {}", result);
 }
 
 fn get_common(left: &str, right: &str) -> char {
@@ -29,6 +34,18 @@ fn get_common(left: &str, right: &str) -> char {
     let right_s: HashSet<char> = right.chars().into_iter().collect();
 
     left_s.intersection(&right_s).next().unwrap().to_owned()
+}
+
+fn get_common_in_3(a: &String, b: &String, c: &String) -> char {
+    let a_set: HashSet<char> = a.chars().into_iter().collect();
+    let b_set: HashSet<char> = b.chars().into_iter().collect();
+    let c_set: HashSet<char> = c.chars().into_iter().collect();
+
+    let intersection = a_set.intersection(&b_set);
+    let intersection: HashSet<char> = intersection.into_iter().map(|el| el.to_owned()).collect();
+    let mut intersection = intersection.intersection(&c_set);
+    
+    intersection.next().unwrap().to_owned()
 }
 
 fn split_str(s: &String) -> (&str, &str) {
