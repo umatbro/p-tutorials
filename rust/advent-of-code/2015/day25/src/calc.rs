@@ -2,7 +2,6 @@ pub fn calc_code(prev_code: &u64) -> u64 {
     prev_code * 252533 % 33554393
 }
 
-
 #[cfg(test)]
 mod tests {
     use crate::calc::calc_code;

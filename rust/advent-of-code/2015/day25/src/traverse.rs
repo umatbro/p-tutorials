@@ -6,7 +6,10 @@ pub struct PaperPos {
 
 impl Clone for PaperPos {
     fn clone(&self) -> Self {
-        Self { row: self.row.clone(), col: self.col.clone() }
+        Self {
+            row: self.row.clone(),
+            col: self.col.clone(),
+        }
     }
 }
 impl PartialEq for PaperPos {
@@ -14,10 +17,10 @@ impl PartialEq for PaperPos {
         self.row == other.row && self.col == other.col
     }
 }
-impl Eq for PaperPos{}
+impl Eq for PaperPos {}
 impl PaperPos {
     pub fn from(row: u64, col: u64) -> Self {
-        Self {row, col}
+        Self { row, col }
     }
 }
 
@@ -27,7 +30,10 @@ pub struct InfinitePaper {
 }
 impl InfinitePaper {
     pub fn new() -> Self {
-        Self {diag_len: 1, current_pos: PaperPos::from(1, 1)}
+        Self {
+            diag_len: 1,
+            current_pos: PaperPos::from(1, 1),
+        }
     }
 }
 impl Iterator for InfinitePaper {
