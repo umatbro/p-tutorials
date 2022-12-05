@@ -1,5 +1,5 @@
 use std::{str::FromStr, path::Path, fs::File, io::{BufReader, BufRead}};
-use nom::{self, IResult, bytes::complete::take_while_m_n};
+use nom::{self, IResult};
 
 //             [J] [Z] [G]            
 //             [Z] [T] [S] [P] [R]    
@@ -10,6 +10,7 @@ use nom::{self, IResult, bytes::complete::take_while_m_n};
 // [T] [G] [T] [R] [B] [P] [B] [G] [G]
 // [S] [S] [B] [D] [F] [L] [Z] [N] [L]
 //  1   2   3   4   5   6   7   8   9 
+#[allow(dead_code)]
 fn print_stacks(stacks: &Vec<Vec<char>>) {
     for (i, stack) in stacks.iter().enumerate().skip(1) {
         print!("{}: {:?}", i, stack);
@@ -40,9 +41,8 @@ fn main() {
         let s = l.parse::<StackTransfer>().unwrap();
         
         for _ in 0..s.amount {
-            let mut el = None;
             let source_stack = &mut stacks[s.from as usize];
-            el = source_stack.pop();
+            let el = source_stack.pop();
             if let Some(v) = el {
                 let target_stack = &mut stacks[s.to as usize];
                 target_stack.push(v);
