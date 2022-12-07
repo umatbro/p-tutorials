@@ -101,14 +101,17 @@ impl Tree {
                 Some(dir) => {
                     self.current_dir = RefCell::new(Rc::clone(&dir));
                     return Ok(Rc::clone(&dir));
-                },
+                }
                 None => return Err(CdError::NoParentForRoot),
             }
         }
         let dirs_binding = current_dir.directories.borrow();
-        
-        let search_result: Vec<&Rc<Directory>> = dirs_binding.iter().filter(|dir| dir.name == String::from(name)).collect();
-        
+
+        let search_result: Vec<&Rc<Directory>> = dirs_binding
+            .iter()
+            .filter(|dir| dir.name == String::from(name))
+            .collect();
+
         if search_result.len() > 1 {
             return Err(CdError::Conflict);
         }
@@ -118,7 +121,7 @@ impl Tree {
             Some(dir) => {
                 self.current_dir = RefCell::new(Rc::clone(&dir));
                 Ok(Rc::clone(dir))
-            },
+            }
             None => Err(CdError::NotFound),
         }
     }
@@ -149,7 +152,7 @@ mod tests {
         let in_tree = root_files.get(0).unwrap();
         assert!(Rc::ptr_eq(&file, in_tree));
         assert_eq!(Rc::strong_count(&file), 2);
-        
+
         let parent_from_file = in_tree.parent.borrow().upgrade().unwrap();
         let parent_from_tree = tree.root.borrow();
         assert!(Rc::ptr_eq(&parent_from_file, &parent_from_tree));
@@ -165,7 +168,7 @@ mod tests {
         let in_tree = root_files.get(0).unwrap();
         assert!(Rc::ptr_eq(&file, in_tree));
         assert_eq!(Rc::strong_count(&file), 2);
-        
+
         let parent_from_file = in_tree.parent.borrow().upgrade().unwrap();
         let parent_from_tree = tree.root.borrow();
         assert!(Rc::ptr_eq(&parent_from_file, &parent_from_tree));
@@ -175,23 +178,23 @@ mod tests {
         let tree = Tree::new();
         {
             let root = tree.root.borrow();
-            
+
             let a = Directory::add_directory(&root, String::from("a"));
-            let b = Directory::add_file(&root, String::from("b.txt"), 14848514);
-            let c = Directory::add_file(&root, String::from("c.dat"), 8504156);
+            let _b = Directory::add_file(&root, String::from("b.txt"), 14848514);
+            let _c = Directory::add_file(&root, String::from("c.dat"), 8504156);
             let d = Directory::add_directory(&root, String::from("d"));
-            
+
             let e = Directory::add_directory(&a, String::from("e"));
-            let f = Directory::add_file(&a, String::from("f"), 29116);
-            let g = Directory::add_file(&a, String::from("g"), 2557);
-            let h = Directory::add_file(&a, String::from("h.lst"), 62596);
+            let _f = Directory::add_file(&a, String::from("f"), 29116);
+            let _g = Directory::add_file(&a, String::from("g"), 2557);
+            let _h = Directory::add_file(&a, String::from("h.lst"), 62596);
 
-            let i = Directory::add_file(&e, String::from("i"), 584);
+            let _i = Directory::add_file(&e, String::from("i"), 584);
 
-            let j = Directory::add_file(&d, String::from("j"), 4060174);
-            let k = Directory::add_file(&d, String::from("k"), 7214296);
-            let d_log = Directory::add_file(&d, String::from("d.log"), 8033020);
-            let d_ext = Directory::add_file(&d, String::from("d.ext"), 5626152);
+            let _j = Directory::add_file(&d, String::from("j"), 4060174);
+            let _k = Directory::add_file(&d, String::from("k"), 7214296);
+            let _d_log = Directory::add_file(&d, String::from("d.log"), 8033020);
+            let _d_ext = Directory::add_file(&d, String::from("d.ext"), 5626152);
         }
 
         tree
@@ -199,7 +202,7 @@ mod tests {
 
     #[test]
     fn test_calc_size() {
-        let tree = setup_example_tree();
+        let _tree = setup_example_tree();
 
         // assert_eq!(e.calc_size(), 584);
         // assert_eq!(d.calc_size(), 24933642);

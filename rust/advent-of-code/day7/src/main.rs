@@ -1,7 +1,6 @@
 mod tree;
-
-use tree::{Tree, Directory};
+use tree::Tree;
 
 fn main() {
-    let tree = Tree::new();
+    let _tree = Tree::new();
 }
