@@ -1,7 +1,7 @@
 use std::{
     borrow::{Borrow, BorrowMut},
     cell::RefCell,
-    rc::{Rc, Weak},
+    rc::{Rc, Weak}, collections::vec_deque::Iter,
 };
 
 #[derive(Debug)]
@@ -60,6 +60,18 @@ impl Directory {
         }
         sum
     }
+
+    pub fn get_subdirs(&self) -> Vec<Rc<Directory>> {
+        let mut result = Vec::new();
+        if self.directories.borrow().is_empty() {
+            return Vec::new();
+        }
+        for dir in self.directories.borrow().iter() {
+            result.push(Rc::clone(dir));
+            result.extend(dir.get_subdirs());
+        }
+        result
+    }
 }
 
 #[derive(Debug)]
@@ -104,6 +116,10 @@ impl Tree {
                 }
                 None => return Err(CdError::NoParentForRoot),
             }
+        } else if name == "/"  {
+            let root = Rc::clone(&self.root.borrow());
+            self.current_dir = RefCell::new(Rc::clone(&root));
+            return Ok(Rc::clone(&root));
         }
         let dirs_binding = current_dir.directories.borrow();
 
@@ -202,12 +218,17 @@ mod tests {
 
     #[test]
     fn test_calc_size() {
-        let _tree = setup_example_tree();
+        let mut tree = setup_example_tree();
+        let a = tree.change_dir("a").unwrap();
+        let e = tree.change_dir("e").unwrap();
+        tree.change_dir("..").unwrap();
+        let root = tree.change_dir("..").unwrap();
+        let d = tree.change_dir("d").unwrap();
 
-        // assert_eq!(e.calc_size(), 584);
-        // assert_eq!(d.calc_size(), 24933642);
-        // assert_eq!(a.calc_size(), 94853);
-        // assert_eq!(root.calc_size(), 48381165);
+        assert_eq!(e.calc_size(), 584);
+        assert_eq!(d.calc_size(), 24933642);
+        assert_eq!(a.calc_size(), 94853);
+        assert_eq!(root.calc_size(), 48381165);
     }
 
     #[test]
@@ -236,5 +257,34 @@ mod tests {
         assert_eq!(no_parent_for_root, CdError::NoParentForRoot);
         assert_eq!(tree.current_dir().name, String::from(""));
         assert!(tree.current_dir().parent.borrow().upgrade().is_none());
+    }
+
+    #[test]
+    fn test_change_to_root() {
+        let mut tree = setup_example_tree();
+        tree.change_dir("a").unwrap();
+        tree.change_dir("e").unwrap();
+
+        {
+            let current_dir = tree.current_dir();
+            let parent = current_dir.parent.borrow().upgrade();
+            assert!(parent.is_some());
+        }
+
+        tree.change_dir("/").unwrap();
+        {
+            let current_dir = tree.current_dir();
+            let parent = current_dir.parent.borrow().upgrade();
+            assert!(parent.is_none());
+        }
+    }
+
+    #[test]
+    fn test_get_subdirs() {
+        let tree = setup_example_tree();
+        let flat_dirs = tree.current_dir().get_subdirs();
+
+        let names: Vec<String> =  flat_dirs.iter().map(|d| String::from(&d.name)).collect();
+        assert_eq!(names, vec!["a".to_string(), "e".to_string(), "d".to_string()]);
     }
 }
