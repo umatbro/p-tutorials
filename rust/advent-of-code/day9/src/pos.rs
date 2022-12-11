@@ -1,4 +1,5 @@
 use std::ops::Add;
+use std::cmp;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Pos {
@@ -12,11 +13,14 @@ impl Pos {
     }
 
     pub fn is_adjacent(&self, other: &Self) -> bool {
-        if (self.x - other.x).abs() > 1 || (self.y - other.y).abs() > 1 {
-            false
-        } else {
-            true
-        }
+        self.chebyshev_distance(other) <= 1
+    }
+
+    pub fn chebyshev_distance(&self, other: &Self) -> u32 {
+        let dx = (self.x - other.x).abs() as u32;
+        let dy = (self.y - other.y).abs() as u32;
+
+        cmp::max(dx, dy)
     }
 }
 

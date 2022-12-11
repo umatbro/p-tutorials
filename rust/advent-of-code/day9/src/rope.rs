@@ -4,9 +4,6 @@ use crate::pos::Direction;
 use crate::pos::Pos;
 
 pub struct Rope {
-    // head: Pos,
-    // tail: Pos,
-
     knots: Vec<Pos>,
     tail_positions: HashSet<Pos>,
 }
@@ -16,8 +13,6 @@ impl Rope {
         assert!(size > 0);
         let knots = vec![Pos::new(0, 0); size];
         let mut return_val = Self {
-            // head: Pos::new(0, 0),
-            // tail: Pos::new(0, 0),
             knots,
             tail_positions: HashSet::new(),
         };
@@ -25,11 +20,11 @@ impl Rope {
         return_val
     }
 
-    pub fn get_head(&self) -> &Pos {
+    fn get_head(&self) -> &Pos {
         &self.knots.first().unwrap()
     }
 
-    pub fn get_tail(&self) -> &Pos {
+    fn get_tail(&self) -> &Pos {
         &self.knots.last().unwrap()
     }
 
