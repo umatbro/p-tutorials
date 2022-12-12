@@ -11,16 +11,16 @@ use nom::sequence::tuple;
 use nom::Err as NomErr;
 use nom::IResult;
 
-fn parse_division_element(input: &str) -> IResult<&str, DivisionElement<u32>> {
+fn parse_division_element(input: &str) -> IResult<&str, DivisionElement<u64>> {
     let (input, el) = alt((tag("old"), digit1))(input)?;
     let el = match el {
         "old" => DivisionElement::Old,
-        val => DivisionElement::Val(val.parse::<u32>().unwrap()),
+        val => DivisionElement::Val(val.parse::<u64>().unwrap()),
     };
     Ok((input, el))
 }
 
-pub fn parse_inspection(input: &str) -> IResult<&str, MonkeInspection<u32>> {
+pub fn parse_inspection(input: &str) -> IResult<&str, MonkeInspection<u64>> {
     let input = input.trim();
     let (input, _) = tag("Operation: new = ")(input)?;
     let (input, first_el) = parse_division_element(input)?;
@@ -42,22 +42,22 @@ pub fn parse_inspection(input: &str) -> IResult<&str, MonkeInspection<u32>> {
     ))
 }
 
-fn parse_comma_delimited_numbers(input: &str) -> IResult<&str, Vec<u32>> {
+fn parse_comma_delimited_numbers(input: &str) -> IResult<&str, Vec<u64>> {
     separated_list0(tag(", "), map_res(digit1, str::parse))(input)
 }
 
-pub fn parse_starting_items(input: &str) -> IResult<&str, Vec<u32>> {
+pub fn parse_starting_items(input: &str) -> IResult<&str, Vec<u64>> {
     let input = input.trim();
     let (input, _) = tag("Starting items: ")(input)?;
     parse_comma_delimited_numbers(input)
 }
 
-pub fn parse_divisible_by(input: &str) -> IResult<&str, u32> {
+pub fn parse_divisible_by(input: &str) -> IResult<&str, u64> {
     let input = input.trim();
     let (input, _) = tag("Test: divisible by ")(input)?;
     let (input, number) = digit1(input)?;
 
-    Ok((input, number.parse::<u32>().unwrap()))
+    Ok((input, number.parse::<u64>().unwrap()))
 }
 
 pub fn if_true_target_parser(input: &str) -> IResult<&str, usize> {
@@ -84,7 +84,7 @@ mod tests {
     #[case("  Starting items: 79, 98", vec![79, 98])]
     #[case("  Starting items: 54, 65, 75, 74", vec![54, 65, 75, 74])]
     #[case("  Starting items: 74", vec![74])]
-    fn test_parse_starting_items(#[case] input: &str, #[case] expected_result: Vec<u32>) {
+    fn test_parse_starting_items(#[case] input: &str, #[case] expected_result: Vec<u64>) {
         let (_, result) = parse_starting_items(input).unwrap();
         assert_eq!(expected_result, result);
     }

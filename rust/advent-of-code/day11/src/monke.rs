@@ -1,6 +1,6 @@
 use std::{
     collections::VecDeque,
-    ops::{Add, Mul},
+    ops::{Add, Mul, Rem},
     str::FromStr,
 };
 
@@ -8,20 +8,41 @@ use crate::parse::parse_inspection;
 
 #[derive(Debug)]
 pub struct Monke {
-    pub items: VecDeque<u32>,
-    divisible_by: u32,
-    inspection_rules: MonkeInspection<u32>,
+    pub items: VecDeque<u64>,
+    divisible_by: u64,
+    inspection_rules: MonkeInspection<u64>,
     if_true_throw_to_monkey: usize,
     if_false_throw_to_monkey: usize,
 
-    number_of_inspections: u32,
+    number_of_inspections: u64,
 }
 
 impl Monke {
-    pub fn inspect(&mut self, old_val: &u32) -> (usize, u32) {
+    pub fn inspect(&mut self, old_val: &u64, magic_trick: u64) -> (usize, u64) {
         self.number_of_inspections += 1;
-        let worry_level = self.inspection_rules.inspect(old_val);
-        let worry_level_after_bored = worry_level / 3;
+
+        use DivisionElement::*;
+
+        let val1 = match &self.inspection_rules.element1 {
+            Old => old_val.clone(),
+            Val(v) => v.clone(),
+        };
+        let val2 = match &self.inspection_rules.element2 {
+            Old => old_val.clone(),
+            Val(v) => v.clone(),
+        };
+
+       let worry_level = match self.inspection_rules.op_type {
+            OpType::Add => val1 + val2,
+            OpType::Mul => {
+                let result = val1 * val2;
+                result % magic_trick
+            },
+        };
+
+        // let worry_level = self.inspection_rules.inspect(old_val, magic_trick);
+        // let worry_level_after_bored = worry_level / 3;
+        let worry_level_after_bored = worry_level / 1;
         let is_divisible = worry_level_after_bored % self.divisible_by == 0;
         match is_divisible {
             true => (self.if_true_throw_to_monkey, worry_level_after_bored),
@@ -29,15 +50,19 @@ impl Monke {
         }
     }
 
-    pub fn get_number_of_inspections(&self) -> u32 {
+    pub fn get_number_of_inspections(&self) -> u64 {
         self.number_of_inspections
+    }
+
+    pub fn get_divisible_by(&self) -> u64 {
+        self.divisible_by
     }
 }
 
 pub struct MonkeBuilder {
-    items: Vec<u32>,
-    divisible_by: Option<u32>,
-    inspection_rules: Option<MonkeInspection<u32>>,
+    items: Vec<u64>,
+    divisible_by: Option<u64>,
+    inspection_rules: Option<MonkeInspection<u64>>,
     if_true_throw_to_monke: Option<usize>,
     if_false_throw_to_monke: Option<usize>,
 }
@@ -53,17 +78,17 @@ impl MonkeBuilder {
         }
     }
 
-    pub fn with_items(mut self, items: impl Iterator<Item = u32>) -> Self {
+    pub fn with_items(mut self, items: impl Iterator<Item = u64>) -> Self {
         self.items = Vec::from_iter(items);
         self
     }
 
-    pub fn set_divisible_by(mut self, divisible_by: u32) -> Self {
+    pub fn set_divisible_by(mut self, divisible_by: u64) -> Self {
         self.divisible_by = Some(divisible_by);
         self
     }
 
-    pub fn set_inspection_rules(mut self, inspection_rules: MonkeInspection<u32>) -> Self {
+    pub fn set_inspection_rules(mut self, inspection_rules: MonkeInspection<u64>) -> Self {
         self.inspection_rules = Some(inspection_rules);
         self
     }
@@ -121,7 +146,7 @@ where
     pub(crate) op_type: OpType,
 }
 
-impl FromStr for MonkeInspection<u32> {
+impl FromStr for MonkeInspection<u64> {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -135,9 +160,9 @@ impl FromStr for MonkeInspection<u32> {
 
 impl<T> MonkeInspection<T>
 where
-    T: Add<Output = T> + Mul<Output = T> + Clone,
+    T: Add<Output = T> + Mul<Output = T> + Rem<Output= T> + Clone + std::fmt::Debug,
 {
-    fn inspect(&self, old_val: &T) -> T {
+    fn inspect(&self, old_val: &T, magic_trick: T) -> T {
         use DivisionElement::*;
 
         let val1 = match &self.element1 {
@@ -149,10 +174,14 @@ where
             Val(v) => v.clone(),
         };
 
-        match self.op_type {
+       let result = match self.op_type {
             OpType::Add => val1 + val2,
-            OpType::Mul => val1 * val2,
-        }
+            OpType::Mul => {
+                let result = val1 * val2;
+                result
+            },
+        };
+        result % magic_trick
     }
 }
 
@@ -167,10 +196,10 @@ mod tests {
     #[case(60, Old, Old, 60*60, OpType::Mul)]
     #[case(54, Old, Val(6), 60, OpType::Add)]
     fn test_perform_inspection(
-        #[case] old_val: u32,
-        #[case] el1: DivisionElement<u32>,
-        #[case] el2: DivisionElement<u32>,
-        #[case] expected_result: u32,
+        #[case] old_val: u64,
+        #[case] el1: DivisionElement<u64>,
+        #[case] el2: DivisionElement<u64>,
+        #[case] expected_result: u64,
         #[case] op_type: OpType,
     ) {
         let mi = MonkeInspection {
@@ -178,7 +207,8 @@ mod tests {
             element2: el2,
             op_type,
         };
-        let result = mi.inspect(&old_val);
+        let magic = 7 * 13 * 17 * 29 * 31;
+        let result = mi.inspect(&old_val, magic);
         assert_eq!(result, expected_result);
     }
 
@@ -188,11 +218,11 @@ mod tests {
     #[case("  Operation: new = old * 19", Old, Val(19), OpType::Mul)]
     fn test_parse_monke_inspection(
         #[case] input: &str,
-        #[case] expected1st: DivisionElement<u32>,
-        #[case] expected2nd: DivisionElement<u32>,
+        #[case] expected1st: DivisionElement<u64>,
+        #[case] expected2nd: DivisionElement<u64>,
         #[case] op_type: OpType,
     ) {
-        let mi = input.parse::<MonkeInspection<u32>>().unwrap();
+        let mi = input.parse::<MonkeInspection<u64>>().unwrap();
 
         assert_eq!(mi.element1, expected1st);
         assert_eq!(mi.element2, expected2nd);

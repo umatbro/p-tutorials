@@ -19,13 +19,13 @@ fn main() {
     let reader = BufReader::new(file);
 
     let mut monkeys: Vec<Monke> = vec![];
-
+    
     for cfg in reader.lines().map(|l| l.unwrap()).array_chunks::<7>() {
         let monkey_items = parse_starting_items(&cfg[1]).unwrap().1;
 
         let m_builder = MonkeBuilder::new()
             .with_items(monkey_items.into_iter())
-            .set_inspection_rules(cfg[2].parse::<MonkeInspection<u32>>().unwrap())
+            .set_inspection_rules(cfg[2].parse::<MonkeInspection<u64>>().unwrap())
             .set_divisible_by(parse_divisible_by(&cfg[3]).unwrap().1);
 
         let (_, if_true) = if_true_target_parser(&cfg[4]).unwrap();
@@ -34,9 +34,11 @@ fn main() {
         monkeys.push(m_builder.build().unwrap());
     }
 
-    for _round in 0..20 {
+    let magic_trick = monkeys.iter().fold(1, |acc, x| acc * x.get_divisible_by());
+
+    for _round in 0..10000 {
         for i in 0..monkeys.len() {
-            let mut current_monke_items: VecDeque<u32> = VecDeque::new();
+            let mut current_monke_items: VecDeque<u64> = VecDeque::new();
             let monke = monkeys.get_mut(i).unwrap();
             for i in monke.items.iter() {
                 current_monke_items.push_back(i.clone());
@@ -45,17 +47,17 @@ fn main() {
             drop(monke);
             while let Some(current_item) = current_monke_items.pop_front() {
                 let monke = monkeys.get_mut(i).unwrap();
-                let (throw_to, value_of_item) = monke.inspect(&current_item);
+                let (throw_to, value_of_item) = monke.inspect(&current_item, magic_trick);
                 drop(monke);
                 // println!("I'm monkey {} and I want to throw {} to monkey {}", i, value_of_item, throw_to);
                 let target = monkeys.get_mut(throw_to).unwrap();
                 target.items.push_back(value_of_item);
             }
         }
-        // print_what_monkeys_hold(&monkeys, round);
+        // print_what_monkeys_hold(&monkeys, _round);
     }
 
-    let mut numbers_of_inspections: Vec<u32> = monkeys
+    let mut numbers_of_inspections: Vec<u64> = monkeys
         .iter()
         .map(|m| m.get_number_of_inspections())
         .collect();
