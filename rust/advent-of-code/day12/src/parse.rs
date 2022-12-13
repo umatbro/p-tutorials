@@ -13,6 +13,14 @@ pub fn char_to_num(ch: char) -> u8 {
     value
 }
 
+pub fn map_number(n: u8) -> u8 {
+    if n < 1 || n > 26 {
+        return 0;
+    }
+
+    255 - (n - 1) * 10
+}
+
 pub fn parse_file(file_name: &str) -> MountainMap {
     let file = File::open(file_name).unwrap();
     let reader = BufReader::new(file);

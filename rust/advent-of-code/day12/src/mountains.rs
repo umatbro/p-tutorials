@@ -1,12 +1,14 @@
 use std::{
+    cell::RefCell,
     collections::{HashMap, HashSet},
+    fmt::Debug,
     hash::Hash,
     str::FromStr,
 };
 
 use image::{Rgb, RgbImage};
 
-use crate::parse::char_to_num;
+use crate::parse::{char_to_num, map_number};
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub enum PointType {
@@ -30,12 +32,27 @@ impl FromStr for PointType {
     }
 }
 
-#[derive(Debug, Eq, Clone)]
+#[derive(Eq, Clone)]
 pub struct Point {
     x: u32,
     y: u32,
     height: u8,
     point_type: PointType,
+}
+
+impl Point {
+    pub fn get_x(&self) -> u32 {
+        self.x
+    }
+    pub fn get_y(&self) -> u32 {
+        self.y
+    }
+    pub fn get_height(&self) -> u8 {
+        self.height
+    }
+    pub fn get_point_type(&self) -> PointType {
+        self.point_type.clone()
+    }
 }
 
 impl Hash for Point {
@@ -48,6 +65,17 @@ impl Hash for Point {
 impl PartialEq for Point {
     fn eq(&self, other: &Self) -> bool {
         self.x == other.x && self.y == other.y
+    }
+}
+
+impl Debug for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let pt = match self.point_type {
+            PointType::Regular => "",
+            PointType::Start => "S",
+            PointType::End => "E",
+        };
+        write!(f, "P{pt}({}, {})={}", self.x, self.y, self.height)
     }
 }
 
@@ -79,11 +107,11 @@ impl Point {
 
 pub struct MountainMap {
     points: HashSet<Point>,
+    parents: HashMap<Point, Option<Point>>,
     initial_node: Point,
     end_node: Point,
-    tenative_distance_values: HashMap<Point, f32>,
-    visited_nodes: HashMap<Point, bool>,
-    current_node: Point,
+    tenative_distance_values: RefCell<HashMap<Point, f32>>,
+    unvisited_nodes: HashSet<Point>,
 }
 
 impl MountainMap {
@@ -113,20 +141,51 @@ impl MountainMap {
             };
             (point.clone(), val)
         }));
-        let visited_nodes = HashMap::from_iter(points.iter().map(|point| (point.clone(), false)));
-        let current_node = initial_node.clone();
+        let unvisited_nodes = HashSet::from_iter(points.iter().map(|p| p.clone()));
+
+        let parents = HashMap::from_iter(points.iter().map(|p| (p.clone(), None)));
+        
+
         Self {
             points: HashSet::from_iter(points),
+            parents,
             initial_node,
             end_node,
-            tenative_distance_values,
-            visited_nodes,
-            current_node,
+            tenative_distance_values: RefCell::new(tenative_distance_values),
+            unvisited_nodes,
         }
     }
 
     pub fn get(&self, x: u32, y: u32) -> Option<&Point> {
+        if x >= self.get_x_size() || y >= self.get_y_size() {
+            return None;
+        }
         self.points.get(&Point::coord(x, y))
+    }
+
+    pub fn iter_points(&self) -> std::collections::hash_set::Iter<Point> {
+        self.points.iter()
+    }
+
+    pub fn get_tenative_distances(&self) -> HashMap<Point, f32> {
+        HashMap::from_iter(
+            self.tenative_distance_values
+                .borrow()
+                .iter()
+                .map(|(p, num)| (p.clone(), num.clone())),
+        )
+    }
+
+    pub fn get_tenative_distance(&self, point: &Point) -> Option<f32> {
+        let distances = self.tenative_distance_values.borrow();
+        match distances.get(point) {
+            Some(v) => Some(v.clone()),
+            None => None,
+        }
+    }
+
+    pub fn get_unvisited_nodes(&self) -> HashSet<Point> {
+        HashSet::from_iter(self.unvisited_nodes.iter().map(|p| p.clone()))
     }
 
     pub fn get_x_size(&self) -> u32 {
@@ -137,44 +196,101 @@ impl MountainMap {
         self.points.iter().map(|point| point.y).max().unwrap() + 1
     }
 
-    pub fn find_neighbours_of_node(&self, node: &Point) -> [Option<&Point>; 4] {
-        let left = self.get(node.x - 1, node.y);
-        let right = self.get(node.x - 1, node.y);
-        let top = self.get(node.x, node.y - 1);
-        let bot = self.get(node.x, node.y + 1);
-
-        [left, top, right, bot]
+    pub fn get_parent(&self, point: &Point) -> &Option<Point> {
+        self.parents.get(point).expect(&format!("Point {:?} not found.", point))
     }
 
-    fn calculate_neighbour_distances(&mut self) {
-        println!("Checking node {:?}", self.current_node);
-        let neighbours = self.find_neighbours_of_node(&self.current_node);
-        dbg!(&neighbours);
-        for neighbour in neighbours {
-            if let Some(n) = neighbour {
-                let dist = self.tenative_distance_values.get_mut(n).unwrap();
+    pub fn find_neighbours_of_node(&self, node: &Point) -> [Option<&Point>; 4] {
+        let xsize = self.get_x_size();
+        let ysize = self.get_y_size();
+        let left = if node.x == 0 {
+            None
+        } else {
+            self.get(node.x - 1, node.y)
+        };
+        let right = if node.x < xsize - 1 {
+            self.get(node.x + 1, node.y)
+        } else {
+            None
+        };
+        let top = if node.y == 0 {
+            None
+        } else {
+            self.get(node.x, node.y - 1)
+        };
+        let bot = if node.y < ysize - 1 {
+            self.get(node.x, node.y + 1)
+        } else {
+            None
+        };
+
+        [left, top, right, bot].map(|neigh| {
+            // do not allow neighbours which are higher more than 1
+            if let Some(n) = neigh {
+                if n.height > node.height + 1 {
+                    None
+                } else {
+                    Some(n)
+                }
+            } else {
+                neigh
+            }
+        })
+    }
+
+    fn find_smallest_distance(&self) -> (Point, f32) {
+        let distances = self.tenative_distance_values.borrow();
+        let (p, v) = self.unvisited_nodes.iter().map(|p| {
+            let val = distances.get(p).unwrap();
+            (p, val)
+        }).min_by_key(|(k, v)| **v as i32).expect("Min by key was not found");
+
+        (p.clone(), v.clone())
+    }
+
+    pub fn process_shortest_distance(&mut self) {
+        while !self.unvisited_nodes.is_empty() {
+            let node_with_smallest_dist = self.find_smallest_distance();
+            let (current_node, val) = node_with_smallest_dist;
+            self.unvisited_nodes.remove(&current_node);
+            if let PointType::End = current_node.point_type {
+                println!("End found in {:?} with the distance of {}", current_node, self.get_tenative_distance(&current_node).unwrap());
+                break;
+            }
+            let unexplored_neighbours: Vec<Point> = self.find_neighbours_of_node(&current_node)
+                .iter()
+                .filter(|neighbour| match neighbour {
+                    None => false,
+                    Some(point) => self.unvisited_nodes.contains(point),
+                })
+                .map(|n| n.unwrap().clone())
+                .collect();
+            // dbg!(&unexplored_neighbours);
+            for neighbour in unexplored_neighbours {
+                let distances = self.tenative_distance_values.borrow();
+                let new_dist = 1.0 + distances.get(&current_node).expect(&format!("Could not find distance for {:?}", current_node));
+                drop(distances);
+
+                let mut distances_mut = self.tenative_distance_values.borrow_mut();
+                let old_neigh_distance = distances_mut.get_mut(&neighbour).expect(&format!("Could not find distance for neighbour {:?}", neighbour));
+                if new_dist < *old_neigh_distance {
+                    *old_neigh_distance = new_dist;
+                    self.parents.insert(neighbour, Some(current_node.clone()));
+                }
             }
         }
     }
 
-    pub fn save_map_image(&self, file_name: &str) -> Result<(), image::ImageError> {
-        let mut img = RgbImage::new(self.get_x_size(), self.get_y_size());
-
-        for p in self.points.iter() {
-            let color_val = map_number(p.height);
-            img.put_pixel(p.x, p.y, Rgb([color_val; 3]))
+    pub fn find_path(&self) -> Vec<Point> {
+        let mut result = Vec::new();
+        let mut current_node = &self.end_node;
+        while let Some(parent) = self.get_parent(current_node) {
+            result.push(parent.clone());
+            current_node = parent;
         }
 
-        img.save(file_name)
+        result
     }
-}
-
-fn map_number(n: u8) -> u8 {
-    if n < 1 || n > 26 {
-        return 0;
-    }
-
-    255 - (n - 1) * 10
 }
 
 #[cfg(test)]
@@ -183,7 +299,7 @@ mod tests {
 
     use crate::parse::parse_file;
 
-    use super::PointType;
+    use super::{Point, PointType};
 
     #[test]
     fn test_example_size() {
@@ -209,6 +325,31 @@ mod tests {
         let regular = m.get(1, 1).unwrap();
         assert_eq!(regular.point_type, PointType::Regular);
         assert_eq!(regular.height, 2);
+    }
+
+    #[test]
+    fn test_find_closest_neighbours() {
+        let m = parse_file("input.test");
+        let neighbours = m.find_neighbours_of_node(&Point::coord(0, 0));
+        assert_eq!(
+            neighbours,
+            [
+                None,
+                None,
+                Some(&Point::coord(1, 0)),
+                Some(&Point::coord(0, 1))
+            ]
+        );
+        let r_neighbours = m.find_neighbours_of_node(&Point::from_map(3, 1, 'r'));
+        assert_eq!(
+            r_neighbours,
+            [
+                Some(&Point::coord(2, 1)),
+                Some(&Point::coord(3, 0)),
+                None,
+                Some(&Point::coord(3, 2)),
+            ]
+        );
     }
 }
 // struct Point {
