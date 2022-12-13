@@ -3,12 +3,19 @@ use std::{
     collections::{HashMap, HashSet},
     fmt::Debug,
     hash::Hash,
-    str::FromStr,
+    str::FromStr, thread::current, io,
 };
 
 use image::{Rgb, RgbImage};
 
 use crate::parse::{char_to_num, map_number};
+
+fn deb<T: Debug>(v: T) {
+    dbg!(v);
+    let mut user_input = String::new();
+    let stdin = io::stdin();
+    stdin.read_line(&mut user_input).unwrap();
+}
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub enum PointType {
@@ -200,6 +207,10 @@ impl MountainMap {
         self.parents.get(point).expect(&format!("Point {:?} not found.", point))
     }
 
+    pub fn get_end_node(&self) -> &Point {
+        &self.end_node
+    }
+
     pub fn find_neighbours_of_node(&self, node: &Point) -> [Option<&Point>; 4] {
         let xsize = self.get_x_size();
         let ysize = self.get_y_size();
@@ -291,6 +302,106 @@ impl MountainMap {
 
         result
     }
+
+    pub fn find_path_for_node(&self, node: &Point) -> Vec<Point> {
+        let mut result = Vec::new();
+        let mut current_node = node;
+        while let Some(parent) = self.get_parent(current_node) {
+            result.push(parent.clone());
+            current_node = parent;
+        }
+        result
+    }
+
+    pub fn prepare_for_reverse(&mut self) {
+        let mut new_distances = HashMap::new();
+        for (point, distance) in self.tenative_distance_values.borrow().iter() {
+            match point.point_type {
+                PointType::End => new_distances.insert(point.clone(), 0.),
+                _ => new_distances.insert(point.clone(), f32::INFINITY),
+            };
+        }
+
+        self.tenative_distance_values = RefCell::new(new_distances);
+    }
+
+    pub fn unvisited_nodes_with_height_a_exist(&self) -> bool {
+        for node in self.unvisited_nodes.iter() {
+            if node.height == 1 {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    fn find_neighbours_of_node_reverse(&self, node: &Point) -> [Option<&Point>; 4] {
+        if node.height == 1 {
+            return [None; 4];
+        }
+        let xsize = self.get_x_size();
+        let ysize = self.get_y_size();
+        
+        let left = if node.x == 0 { None } else {
+            self.get(node.x - 1, node.y)
+        };
+        let right = if node.x < xsize - 1 {
+            self.get(node.x + 1, node.y)
+        } else { None };
+        let top = if node.y == 0 { None } else { self.get(node.x, node.y - 1) };
+        let bot = if node.y < ysize - 1 { self.get(node.x, node.y + 1) } else { None };
+        
+        [left, top, right, bot].map(|neighbour| {
+            if let Some(n) = neighbour {
+                if n.height < node.height - 1 {
+                    None
+                } else {
+                    Some(n)
+                }
+            } else {
+                neighbour
+            }
+        })
+    }
+
+    pub fn process_shortest_distance_reverse(&mut self) {
+        while self.unvisited_nodes_with_height_a_exist() {
+            let node_with_smallest_dist = self.find_smallest_distance();
+            let (current_node, _) = node_with_smallest_dist;
+            self.unvisited_nodes.remove(&current_node);
+
+            let unexplored_neighbours: Vec<Point> = self.find_neighbours_of_node_reverse(&current_node)
+                .iter()
+                .flatten()
+                .filter(|p| self.unvisited_nodes.contains(p))
+                .map(|p| p.clone().clone())
+                .collect();
+            // deb(&unexplored_neighbours);
+            for neighbour in unexplored_neighbours {
+                let distances = self.tenative_distance_values.borrow();
+                let new_dist = 1.0 + distances.get(&current_node).expect(&format!("[Reverse] Could not find distance for {:?}", current_node));
+                drop(distances);
+
+                let mut distances_mut  = self.tenative_distance_values.borrow_mut();
+                let old_neigh_distance = distances_mut.get_mut(&neighbour).expect(&format!("[Reverse] Could not find distance for neighbour {:?}", neighbour));
+
+                if new_dist < *old_neigh_distance {
+                    *old_neigh_distance = new_dist;
+                    self.parents.insert(neighbour, Some(current_node.clone()));
+                }
+            }
+        }
+    }
+
+    pub fn find_smallest_distance_for_a_height(&self) -> (Point, f32) {
+        let distances = self.tenative_distance_values.borrow();
+        let result = distances
+            .iter()
+            .filter(|(p, d)| p.height == 1)
+            .map(|(p, d)| (p.clone(), d.clone()))
+            .min_by_key(|(_, dist)| *dist as i32).unwrap();
+
+        result
+    }
 }
 
 #[cfg(test)]
@@ -352,47 +463,3 @@ mod tests {
         );
     }
 }
-// struct Point {
-//     x: i32,
-//     y: i32,
-//     height: u32,
-//     prev: Option<Box<Point>>,
-// }
-
-// fn dijkstra(start: Point, end: Point) -> Vec<Point> {
-//     // Create a priority queue to store the nodes that are yet to be visited,
-//     // with the distance as the priority.
-//     let mut queue = BinaryHeap::new();
-
-//     // Set the distance of the starting point to 0 and add it to the queue.
-//     start.distance = 0;
-//     queue.push(start);
-
-//     // Create a set to store the nodes that have already been visited.
-//     let mut visited = HashSet::new();
-
-//     // Loop until the queue is empty or the end point has been reached.
-//     while let Some(point) = queue.pop() {
-//         // If the end point has been reached, return the path.
-//         if point == end {
-//             return reconstruct_path(&point);
-//         }
-
-//         // Skip this point if it has already been visited.
-//         if !visited.insert(point) {
-//             continue;
-//         }
-
-//         // Get the coordinates of the current point.
-//         let x = point.x;
-//         let y = point.y;
-
-//         // Add the adjacent points to the queue.
-//         queue.push(Point { x: x - 1, y, distance: point.distance + 1, prev: Some(Box::new(point)) });
-//         queue.push(Point { x: x + 1, y, distance: point.distance + 1, prev: Some(Box::new(point)) });
-//         queue.push(Point { x, y: y - 1, distance: point.distance + 1, prev: Some(Box::new(point)) });
-
-//     }
-
-//     Vec::new()
-// }

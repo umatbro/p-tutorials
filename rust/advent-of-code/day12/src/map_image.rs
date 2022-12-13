@@ -1,7 +1,7 @@
 use image::{self, ImageBuffer};
 use image::{Rgb, RgbImage};
 
-use crate::mountains::{MountainMap, PointType};
+use crate::mountains::{MountainMap, PointType, Point};
 use crate::parse::map_number;
 
 pub enum MapType {
@@ -13,7 +13,7 @@ pub enum MapType {
 pub struct MapImageOptions {
     pub file_name: String,
     pub map_type: MapType,
-    pub draw_path: bool,
+    pub draw_path: Option<Point>,
 }
 
 
@@ -35,8 +35,8 @@ fn save_height_image(map: &MountainMap, opts: MapImageOptions) -> Result<(), ima
         };
         img.put_pixel(p.get_x(), p.get_y(), Rgb(color_val));
     }
-    if opts.draw_path {
-        for point in map.find_path() {
+    if let Some(path) = opts.draw_path {
+        for point in map.find_path_for_node(&path) {
             img.put_pixel(point.get_x(), point.get_y(), Rgb([0, 255, 0]))
         }
     }
@@ -56,8 +56,8 @@ fn save_distance_image(map: &MountainMap, opts: MapImageOptions) -> Result<(), i
         img.put_pixel(p.get_x(), p.get_y(), Rgb(color_val));
     }
 
-    if opts.draw_path {
-        for point in map.find_path() {
+    if let Some(path) = opts.draw_path {
+        for point in map.find_path_for_node(&path) {
             img.put_pixel(point.get_x(), point.get_y(), Rgb([0, 255, 0]))
         }
     }
@@ -71,12 +71,12 @@ fn save_visited_image(map: &MountainMap, opts: MapImageOptions) -> Result<(), im
         for x in 0..map.get_x_size() {
             img.put_pixel(x, y, Rgb([0, 0, 255]));
         }
-    };
+    }
     for p in map.get_unvisited_nodes() {
         img.put_pixel(p.get_x(), p.get_y(), Rgb([255, 0, 0]));
     }
-    if opts.draw_path {
-        for point in map.find_path() {
+    if let Some(path) = opts.draw_path {
+        for point in map.find_path_for_node(&path) {
             img.put_pixel(point.get_x(), point.get_y(), Rgb([0, 255, 0]))
         }
     }
