@@ -66,7 +66,7 @@ fn compare_values(left: &Value, right: &Value) -> Result<bool, PairComparisonErr
                     return Ok(l < r);
                 }
             }
-            (Array(left), Array(right)) => {
+            (Array(_left), Array(_right)) => {
                 let res = compare_values(&left_item, &right_item);
                 match &res {
                     Ok(val) => return Ok(*val),
@@ -78,11 +78,11 @@ fn compare_values(left: &Value, right: &Value) -> Result<bool, PairComparisonErr
                     },
                 }
             }
-            (Number(left), Array(right)) => {
+            (Number(left), Array(_right)) => {
                 let new_left = Array(Vec::from(vec![json!(left)]));
                 return compare_values(&new_left, &right_item);
             }
-            (Array(left), Number(right)) => {
+            (Array(_left), Number(right)) => {
                 let new_right = json!([right]);
                 return compare_values(&left_item, &new_right);
             }
