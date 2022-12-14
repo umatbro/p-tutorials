@@ -41,6 +41,9 @@ fn compare_values(left: &Value, right: &Value) -> Result<bool, PairComparisonErr
     if left_arr.len() == 0 && right_arr.len() == 0 {
         return Err(NoDecision);
     }
+    if left_arr == right_arr {
+        return Err(NoDecision);
+    }
     left_arr.reverse();
     right_arr.reverse();
 
@@ -163,6 +166,21 @@ mod tests {
         true
     )]
     #[case("[[5,[7]],[[6,3],[8,[]],6],[[[3,8,1,1,3]],1,7,[],0],[1,[],[],0],[]]", "[]", false)]
+    #[case("[1,2,3,[1,2,3],4,1]", "[1,2,3,[1,2,3],4,0]", false)]
+    #[case(
+        "[[8,[[7,10,10,5],[8,4,9]],3,5],[[[3,9,4],5,[7,5,5]],[[3,2,5],[10],[5,5],0,[8]]],[4,2,[],[[7,5,6,3,0],[4,4,10,7],6,[8,10,9]]],[[4,[],4],10,1]]",
+        "[[[[8],[3,10],[7,6,3,7,4],1,8]]]",
+        true
+
+    )]
+    #[case("[[8], 42]", "[[[8]]]", false)]
+    #[case("[[[1]],1]", "[[1],2]", true)]
+    #[case("[[[1]],2]", "[[1],1]", false)]
+    #[case("[[1],1]", "[[[1]],2]", true)]
+    #[case("[[1],2]", "[[[1]],1]", false)]
+    #[case("[[8,[[7]]]]", "[[[[8]]]]", false)]
+    #[case("[[8,[[7]]]]", "[[[[8],2]]]", true)]
+    #[case("[[8,[[7]]]]", "[[[[8],[3]]]]", true)]
     fn test_compare_values(#[case] left: &str, #[case] right: &str, #[case] expected_result: bool) {
         let pair = Pair::from(left, right);
         let result = pair.in_order();

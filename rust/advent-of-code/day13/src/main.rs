@@ -21,7 +21,7 @@ fn main() {
         // dbg!(&left, &right, index);
         let pair = Pair::from(&left.unwrap(), &right.unwrap());
         let in_order = pair.in_order();
-
+        println!("{}", in_order);
         if in_order {
             result += index;
         }
