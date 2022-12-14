@@ -20,7 +20,9 @@ fn main() {
     for (left, right, _) in reader.lines().tuples() {
         // dbg!(&left, &right, index);
         let pair = Pair::from(&left.unwrap(), &right.unwrap());
-        if pair.in_order() {
+        let in_order = pair.in_order();
+
+        if in_order {
             result += index;
         }
         index += 1;
