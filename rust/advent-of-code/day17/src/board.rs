@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet};
 
 use crate::{shape::{Shape, ShapeType}, coord::Coord};
 use self::ShapeType::*;
@@ -9,6 +9,7 @@ pub enum Direction {
     Right,
 }
 
+#[derive(Debug, PartialEq)]
 pub enum MoveError {
     HitFloor,
     HitWall,
@@ -61,7 +62,101 @@ impl Board {
         //     Direction::Left => self.move_left(),
         //     Direction::Right => self.move_right(),
         // };
-        
+    }
 
+    fn move_left(&mut self) -> Result<(), MoveError> {
+        let shape = self.falling_rock.as_ref().unwrap();
+        let current_coords = shape.get_coords();
+
+        for c in current_coords {
+            let x = c.x;
+            if x < 1 {
+                return Err(MoveError::HitWall);
+            }
+            let new_coord = Coord::new(c.x - 1, c.y);
+            if self.formation.contains(&new_coord) {
+                return Err(MoveError::HitRock);
+            }
+        }
+
+        let s = self.falling_rock.as_mut().unwrap();
+        s.pos = s.pos.relative(-1, 0);
+        
+        Ok(())
+    }
+
+    fn move_right(&mut self) -> Result<(), MoveError> {
+        let shape = self.falling_rock.as_ref().unwrap();
+        let current_coords = shape.get_coords();
+        
+        for c in current_coords {
+            let x = c.x;
+            if x > 6 {
+                return Err(MoveError::HitWall);
+            }
+            let new_coord = Coord::new(c.x + 1, c.y);
+            if self.formation.contains(&new_coord) {
+                return Err(MoveError::HitRock);
+            }
+        }
+
+
+        let s = self.falling_rock.as_mut().unwrap();
+        s.pos = s.pos.relative(1, 0);
+        
+        Ok(())
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use crate::board::MoveError;
+    use crate::coord::Coord;
+
+    use super::Board;
+    use super::Direction::*;
+
+    #[test]
+    fn test_move_left() {
+        let mut board = Board::new();
+        board.spawn_falling_rock();
+        board.move_left().unwrap();
+
+        assert_eq!(board.falling_rock.unwrap().get_pos(), &Coord::new(1, 3));
+    }
+
+    #[test]
+    fn test_move_right() {
+        let mut board = Board::new();
+        board.spawn_falling_rock();
+        board.move_right().unwrap();
+
+        assert_eq!(board.falling_rock.unwrap().get_pos(), &Coord::new(3, 3));
+    }
+
+    #[test]
+    fn test_rock_collision_left() {
+        let mut board = Board::new();
+        board.spawn_falling_rock();
+        board.formation = HashSet::from_iter([Coord::new(1, 3)]);
+        let r = board.move_left();
+        assert!(r.is_err());
+        let e = r.err().unwrap();
+        assert_eq!(e, MoveError::HitRock);
+    }
+
+    #[test]
+    fn test_rock_collision_right() {
+        let mut board = Board::new();
+        board.spawn_falling_rock();
+        board.formation = HashSet::from_iter([Coord::new(6, 3)]);
+        
+        let r = board.move_right();
+        assert!(r.is_err());
+        let e = r.err().unwrap();
+        assert_eq!(e, MoveError::HitRock);
     }
 }
