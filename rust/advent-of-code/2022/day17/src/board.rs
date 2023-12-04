@@ -1,8 +1,9 @@
-use std::{collections::HashSet};
+use std::{collections::HashSet, fmt::Display, cmp::max};
 
 use crate::{shape::{Shape, ShapeType}, coord::Coord};
 use self::ShapeType::*;
 
+const HEIGHT: i32 = 7;
 
 pub enum Direction {
     Left,
@@ -16,15 +17,11 @@ pub enum MoveError {
     HitRock,
 }
 
-pub fn make_move(shape: &Shape, direction: Direction) -> Result<HashSet<Coord>, MoveError> {
-    let current_coords = shape.get_coords();
-    todo!()
-}
-
 pub struct Board {
     formation: HashSet<Coord>,
     falling_rock: Option<Shape>,
-    curr_shape_type: ShapeType
+    curr_shape_type: ShapeType,
+    pub rocks_stopped: u64  ,
 }
 
 impl Board {
@@ -33,11 +30,15 @@ impl Board {
             formation: HashSet::new(),
             falling_rock: None,
             curr_shape_type: ShapeType::Square,
+            rocks_stopped: 0,
         }
     }
 
     pub fn get_max_height(&self) -> i32 {
-        self.formation.iter().map(|r| r.y).max().unwrap_or(0)
+        match self.formation.iter().map(|r| r.y).max() {
+            Some(v) => v+1,
+            None => 0,
+        }
     }
 
     fn spawn_falling_rock(&mut self) {
@@ -51,17 +52,37 @@ impl Board {
             ShapeType::VerticalLine => Square,
             ShapeType::Square => HorizontalLine,
         };
-        self.falling_rock = Some(Shape::new(spawn_pos, next_shape_type));
+        self.falling_rock = Some(Shape::new(spawn_pos, next_shape_type.clone()));
+        self.curr_shape_type = next_shape_type;
+    }
+
+    fn clean(&mut self) {
+        let max = self.get_max_height();
+        let lower_bound = max - HEIGHT;
+        self.formation.retain(|c| c.y > lower_bound);
     }
 
     pub fn play_round(&mut self, direction: Direction) {
         if let None = self.falling_rock {
             self.spawn_falling_rock()
         }
-        // match direction {
-        //     Direction::Left => self.move_left(),
-        //     Direction::Right => self.move_right(),
-        // };
+        let move_result = match direction {
+            Direction::Left => self.move_left(),
+            Direction::Right => self.move_right(),
+        };
+
+        match move_result {
+            Ok(_) => (),
+            Err(e) => assert!(e.eq(&MoveError::HitWall) || e.eq(&MoveError::HitRock)),
+        }
+
+        let down_res = self.move_down();
+        match down_res {
+            Ok(_) => (),
+            Err(e) => assert!(e.eq(&MoveError::HitFloor) || e.eq(&MoveError::HitRock)),
+        }
+
+        self.clean();
     }
 
     fn move_left(&mut self) -> Result<(), MoveError> {
@@ -91,7 +112,7 @@ impl Board {
         
         for c in current_coords {
             let x = c.x;
-            if x > 6 {
+            if x > 5 {
                 return Err(MoveError::HitWall);
             }
             let new_coord = Coord::new(c.x + 1, c.y);
@@ -106,9 +127,67 @@ impl Board {
         
         Ok(())
     }
+
+    fn move_down(&mut self) -> Result<(), MoveError> {
+        let shape = self.falling_rock.as_ref().unwrap();
+        let coords = shape.get_coords();
+
+        let height_when_rock_should_be_deleted = self.get_max_height() - HEIGHT - 4;
+        
+        for c in coords.iter() {
+            if c.y == 0 || c.y <= height_when_rock_should_be_deleted {
+                self.formation.extend(coords);
+                self.falling_rock = None;
+                self.rocks_stopped += 1;
+                return Err(MoveError::HitFloor);
+            }
+        }
+        let new_coords: HashSet<Coord> = coords.iter().map(|c| Coord::new(c.x, c.y -1)).collect();
+        for c in new_coords.iter() {
+            if self.formation.contains(c) {
+                self.formation.extend(coords);
+                self.falling_rock = None;
+                self.rocks_stopped += 1;
+                return Err(MoveError::HitRock);
+            }
+        }
+        let curr_pos = self.falling_rock.as_ref().unwrap().get_pos();
+        let new_pos = curr_pos.relative(0, -1);
+        self.falling_rock.as_mut().unwrap().set_pos(new_pos);
+        Ok(())
+    }
 }
 
+impl Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let falling_rock_coords = match &self.falling_rock {
+            Some(r) => r.get_coords(),
+            None => HashSet::new(),
+        };
+        let formation_coords: HashSet<Coord> = self.formation.iter().map(|c| c.relative(0, 0)).collect();
+        let combined_coords: HashSet<_> = falling_rock_coords.union(&formation_coords).collect();
 
+        let max_height = combined_coords.iter().map(|c| c.y).max().unwrap_or(1);
+        let lower_bound = max(0, max_height - HEIGHT - 4);
+        for line in (lower_bound..=max_height).rev() {
+            for col in 0..7 {
+                let this_coord = Coord::new(col, line);
+                let coord_in_falling = falling_rock_coords.contains(&this_coord);
+                let coord_in_formation = formation_coords.contains(&this_coord);
+                if coord_in_falling {
+                    write!(f, "{}", "@").unwrap();
+                } else if coord_in_formation {
+                    write!(f, "{}", "#").unwrap();
+                } else {
+                    write!(f, "{}", ".").unwrap();
+                }
+            }
+            writeln!(f, "  // {}", line).unwrap();
+        }
+        writeln!(f, "Fallen: {}", self.rocks_stopped).unwrap();
+        Ok(())
+    }
+}
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;

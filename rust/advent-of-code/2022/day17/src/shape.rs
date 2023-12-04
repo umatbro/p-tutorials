@@ -6,6 +6,7 @@ use std::{
 use crate::coord::Coord;
 
 
+#[derive(Clone)]
 pub enum ShapeType {
     HorizontalLine,
     Cross,

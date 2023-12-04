@@ -83,11 +83,26 @@ fn compare_values(left: &Value, right: &Value) -> Result<bool, PairComparisonErr
             }
             (Number(left), Array(_right)) => {
                 let new_left = Array(Vec::from(vec![json!(left)]));
-                return compare_values(&new_left, &right_item);
+                let res = compare_values(&new_left, &right_item);
+                match &res {
+                    Ok(val) => return Ok(*val),
+                    Err(e) => match e{
+                        NoDecision => continue,
+                        _ => return res,
+                    }
+                }
             }
             (Array(_left), Number(right)) => {
                 let new_right = json!([right]);
-                return compare_values(&left_item, &new_right);
+                let res = compare_values(&left_item, &new_right);
+                return res;
+                // match &res {
+                //     Ok(val) => return Ok(*val),
+                //     Err(e) => match e{
+                //         NoDecision => continue,
+                //         _ => return res,
+                //     }
+                // }
             }
 
             _ => {
