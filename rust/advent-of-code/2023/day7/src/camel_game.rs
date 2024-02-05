@@ -63,6 +63,20 @@ impl Ord for Hand {
     }
 }
 
+impl Hand {
+    /// For part2, we need to map all Jacks to Jokers in a hand
+    pub fn map_jacks_to_jokers(self) -> Self {
+        let new_cards = self.cards.map(|c| match c {
+            Card::Jack => Card::Joker,
+            _ => c,
+        });
+        Self {
+            cards: new_cards,
+            bid: self.bid,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum HandType {
     FiveOfAKind,
@@ -107,6 +121,35 @@ impl From<&Hand> for HandType {
                 .or_insert(1);
         }
 
+        let number_of_jokers = number_of_cards.get(&Card::Joker).unwrap_or(&0);
+        if number_of_jokers == &5 {
+            return HandType::FiveOfAKind;
+        }
+        let max_number_of_cards: HashMap<_, _> = number_of_cards
+            .iter()
+            .filter(|(k, _)| **k != &Card::Joker)
+            .map(|(k, v)| (*k, *v))
+            .collect();
+        
+        // handle case when jokers are in the hand
+        if number_of_jokers > &0 {
+            let mut top2_repeated: Vec<_> = max_number_of_cards.values().collect();
+            top2_repeated.sort();
+            top2_repeated.reverse();
+            let number_of_cards = match top2_repeated.as_slice() {
+                [2, 2] => return HandType::FullHouse,
+                v => v.iter().max().unwrap_or(&&0),
+            };
+            return match *number_of_cards + number_of_jokers {
+                5 => HandType::FiveOfAKind,
+                4 => HandType::FourOfAKind,
+                3 => HandType::ThreeOfAKind,
+                2 => HandType::OnePair,
+                _ => HandType::HighCard,
+            }
+        }
+
+        // handle case when there are no jokers in the hand
         let mut top2_repeated: Vec<_> = number_of_cards.values().collect();
         top2_repeated.sort();
         top2_repeated.reverse();
@@ -131,6 +174,7 @@ pub enum Card {
     Queen,
     Jack,
     Number(u8),
+    Joker,
 }
 
 impl FromStr for Card {
@@ -158,6 +202,7 @@ impl Debug for Card {
             Card::King => "K".into(),
             Card::Queen => "Q".into(),
             Card::Jack => "J".into(),
+            Card::Joker => "J".into(),
             Card::Number(10) => "T".into(),
             Card::Number(v) => format!("{}", v),
         };
@@ -173,6 +218,7 @@ impl From<&Card> for u32 {
             Card::Queen => 12,
             Card::Jack => 11,
             Card::Number(v) => *v as u32,
+            Card::Joker => 0,
         }
     }
 }
@@ -244,10 +290,10 @@ mod tests {
     }
 
     #[rstest]
-    // #[case(Hand::from_str("32T3K 765").unwrap(), HandType::OnePair)]
-    // #[case(Hand::from_str("T55J5 684").unwrap(), HandType::ThreeOfAKind)]
-    // #[case(Hand::from_str("KK677 28").unwrap(), HandType::TwoPairs)]
-    // #[case(Hand::from_str("QQQAA 483").unwrap(), HandType::FullHouse)]
+    #[case(Hand::from_str("32T3K 765").unwrap(), HandType::OnePair)]
+    #[case(Hand::from_str("T55J5 684").unwrap(), HandType::ThreeOfAKind)]
+    #[case(Hand::from_str("KK677 28").unwrap(), HandType::TwoPairs)]
+    #[case(Hand::from_str("QQQAA 483").unwrap(), HandType::FullHouse)]
     #[case(Hand::from_str("KKKKK 0").unwrap(), HandType::FiveOfAKind)]
     fn test_detect_hand_type(#[case] hand: Hand, #[case] expected: HandType) {
         let hand_type = HandType::from(&hand);
@@ -264,6 +310,56 @@ mod tests {
     fn test_compare_hands(#[case] hand_l: Hand, #[case] hand_r: Hand, #[case] side: SideIsGreater) {
         match side {
             Left => assert!(hand_l > hand_r),
+            Right => assert!(hand_r > hand_l),
+            Equal => assert_eq!(hand_l, hand_r),
+        }
+    }
+
+    #[test]
+    fn test_map_jacks_to_jokers() {
+        let hand = Hand::from_str("KTJJT 220").unwrap();
+        let expected = Hand {
+            cards: [King, Number(10), Joker, Joker, Number(10)],
+            bid: 220,
+        };
+        let hand = hand.map_jacks_to_jokers();
+        assert_eq!(hand, expected);
+    }
+
+    #[rstest]
+    #[case(Hand::from_str("32T3K 765").unwrap(), HandType::OnePair)]
+    #[case(Hand::from_str("T55J5 684").unwrap(), HandType::FourOfAKind)]
+    #[case(Hand::from_str("KK677 0").unwrap(), HandType::TwoPairs)]
+    #[case(Hand::from_str("QQQJA 483").unwrap(), HandType::FourOfAKind)]
+    #[case(Hand::from_str("JJJJJ 24").unwrap(), HandType::FiveOfAKind)]
+    #[case(Hand::from_str("KJKA2 0").unwrap(), HandType::ThreeOfAKind)]
+    #[case(Hand::from_str("KKJAA 0").unwrap(), HandType::FullHouse)]
+    #[case(Hand::from_str("KTJJT 0").unwrap(), HandType::FourOfAKind)]
+    fn test_get_hand_type_with_jokers(#[case] hand: Hand, #[case] expected: HandType) {
+        let hand = hand.map_jacks_to_jokers();
+        let hand_type = HandType::from(&hand);
+        assert_eq!(hand_type, expected);
+    }
+
+    #[rstest]
+    #[case(Hand::from_str("32T3K 765").unwrap(), Hand::from_str("T55J5 684").unwrap(), Right)]
+    #[case(Hand::from_str("JKKK2 1").unwrap(), Hand::from_str("2KKKK 1").unwrap(), Right)]
+    #[case(Hand::from_str("KTJJT 220").unwrap(), Hand::from_str("T55J5 684").unwrap(), Left)]
+    #[case(Hand::from_str("KTJJT 220").unwrap(), Hand::from_str("QQQJA 483").unwrap(), Left)]
+    fn test_compare_hands_with_jokers(
+        #[case] hand_l: Hand,
+        #[case] hand_r: Hand,
+        #[case] side: SideIsGreater,
+    ) {
+        let hand_l = hand_l.map_jacks_to_jokers();
+        let hand_r = hand_r.map_jacks_to_jokers();
+        match side {
+            Left => assert!(
+                hand_l > hand_r,
+                "Left: {:?}, Right: {:?}",
+                HandType::from(&hand_l),
+                HandType::from(&hand_r)
+            ),
             Right => assert!(hand_r > hand_l),
             Equal => assert_eq!(hand_l, hand_r),
         }
