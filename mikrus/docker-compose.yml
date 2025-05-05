@@ -14,3 +14,7 @@ services:
       #   source: ./nginx.conf
       #   target: /etc/nginx/nginx.conf
       - ./certs:/etc/nginx/certs
+      - ./nginx:/etc/nginx
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www:/var/www
+      
