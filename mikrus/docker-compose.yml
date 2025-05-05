@@ -15,4 +15,3 @@ services:
       - ./nginx:/etc/nginx
       - /etc/letsencrypt:/etc/letsencrypt
       - /var/www:/var/www
-      
