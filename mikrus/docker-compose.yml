@@ -1,0 +1,17 @@
+# nginx reverse proxy
+
+version: '3.3'
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    network_mode: "host"  # Use host networking to bind to the host's network stack
+    # ports:  # ports are commented out because of the network_mode: "host"
+    #   - "80:80"
+    #   - "443:443"
+    volumes:
+      - ./certs:/etc/nginx/certs
+      - ./nginx:/etc/nginx
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www:/var/www
