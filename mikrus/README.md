@@ -39,7 +39,7 @@ Select the domain you want to get the certificate for and press enter. Certbot w
 ```
 cp /etc/nginx/sites-enabled/<app_config> nginx/sites-enabled/
 ```
-Certbot will atttempt to use the system nginx process that's why the docker-compose nginx process needs to be stopped temporarily.
+Certbot will attempt to use the system nginx process that's why the docker-compose nginx process needs to be stopped temporarily.
 
 The docker has to also be stopped temporarily to allow certbot to refresh the certificates. 
 To do this, update the cron entry 
